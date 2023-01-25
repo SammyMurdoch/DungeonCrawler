@@ -1,4 +1,4 @@
-import sqlite3
+import pandas as pd
 
 class Tile:
     def __init__(self, tile_data: dict):
@@ -35,6 +35,17 @@ tile = Tile({"coord": (0, 0),
 
 
 print(tile)
-print("hi")
 
 
+tiles_df = pd.read_csv('tiles.csv', encoding='utf-8-sig')
+tiles = tiles_df.to_dict(orient='records')
+
+items_df = pd.read_csv('monsters.csv', encoding='utf-8-sig')
+items = items_df.to_dict(orient='records')
+
+monsters_df = pd.read_csv('monsters.csv', encoding='utf-8-sig')
+monsters = monsters_df.to_dict(orient='records')
+
+print(tiles)
+print(items)
+print(monsters)
