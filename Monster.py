@@ -10,3 +10,6 @@ class Monster:
 
     def __str__(self) -> str:
         return f'{self.name}:\nHit Points: {self.hit_points}, Attack Damage: {self.attack_damage}'
+
+    def attack(self):
+        return self.attack_damage
