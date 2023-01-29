@@ -5,3 +5,7 @@ Each square is an instance of a class with items, monsters ect.
 
 
 Level map is a list of sq
+
+
+
+Want a dictionary of tiles: key is the coordinate, value is a dictionary of items monsters ect

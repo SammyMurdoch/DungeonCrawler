@@ -1,2 +1,3 @@
 ﻿coord,items,monsters
-"(0, 1)","sword, shield",zombie
+"(0, 1)","['sword','shield']",'zombie'
+"(0, 2)","['sword','shield']",'zombie'
