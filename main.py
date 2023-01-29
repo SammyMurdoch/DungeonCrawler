@@ -1,4 +1,5 @@
 import pandas as pd
+import math
 
 # class Item:  # Have subclasses for weapons ect
 #     def __init__(self, item_data: dict):
@@ -58,25 +59,31 @@ import pandas as pd
 #
 #         return level_data
 
-
-
 hi_df = pd.read_csv('tiles.csv')
 
-key_name = hi_df.columns[0]
+key = hi_df.columns[0]
+key_name_type = key.split("/")
 
-hi_df_dict = hi_df.to_dict(orient='records')
+hi_df_rows = hi_df.to_dict(orient='records')
 
 hi_dict = {}
 
-for h in hi_df_dict:
-    key = h[key_name]
+for h in hi_df_rows:
+    new_key = eval(key_name_type[1] + '(' + h[key] + ')')
 
-    value = {k: exec(v) for (k, v) in h.items() if k != key_name}
+    value = {}
 
-    hi_dict[key] = value
+    for (k, v) in h.items():
+        if k != key:
+            k_name_type = k.split("/")
+
+            new_value = None if pd.isna(v) else eval(k_name_type[1] + '(' + v + ')')
+            value[k_name_type[0]] = new_value
+
+
+    hi_dict[new_key] = value
 
 print(hi_dict)
-
 
 # class Tile:
 #     def __init__(self, coord: tuple, level):

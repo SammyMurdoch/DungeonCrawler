@@ -1,4 +1,4 @@
-﻿name,hit_points,attack_damage
+﻿name/str,hit_points/int,attack_damage/int
 zombie,10,2
 snail,1000,1000
 zombie_rabbit,1,1
