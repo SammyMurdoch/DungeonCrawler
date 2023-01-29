@@ -3,6 +3,9 @@ import pandas as pd
 class Game:  # Class for running the game
     @staticmethod
     def convert_correct_data_type(string: str, data_type: str):
+        if string == 'nan':
+            return None
+
         if string[0] == '"' and string[-1] == '"':
             string = string[1:-1]
 
@@ -46,5 +49,5 @@ class Game:  # Class for running the game
         return hi_dict
 
 
-print(type(Game.csv_to_dict_keys_unique_column('tiles.csv', 0)[(0,1)]['items']))
+print(Game.csv_to_dict_keys_unique_column('tiles.csv', 0))
 
