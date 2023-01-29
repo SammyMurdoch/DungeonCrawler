@@ -1,38 +1,50 @@
 import pandas as pd
-# class Game:  # Class for running the game
-#     @staticmethod
-#     def get_csv_data_to_dict(source):
-#         df = pd.read_csv(source, encoding='utf-8-sig', header=0)
-#         df_rows = df.to_dict(orient='records')
-#
-#
-#
-#
-#     item_data = get_csv_data_to_dict('items.csv')
-#     monster_data = get_csv_data_to_dict('monsters.csv')
 
-hi_df = pd.read_csv('tiles.csv')
+class Game:  # Class for running the game
+    @staticmethod
+    def convert_correct_data_type(string: str, data_type: str):
+        if string[0] == '"' and string[-1] == '"':
+            string = string[1:-1]
 
-key = hi_df.columns[0]
-key_name_type = key.split('/')
+        if data_type in ['list', 'tuple']:
+            corrected_data_type = eval(data_type + '(' + string + ')')
 
-hi_df_rows = hi_df.to_dict(orient='records')
+        else:
+            corrected_data_type = eval(data_type + '(' + '"' + string + '"' + ')')
 
-hi_dict = {}
-
-for h in hi_df_rows:
-    new_key = eval(key_name_type[1] + '(' + h[key] + ')')
-
-    value = {}
-
-    for (k, v) in h.items():
-        if k != key:
-            k_name_type = k.split('/')
-
-            new_value = None if pd.isna(v) else eval(k_name_type[1] + '(' + v + ')')
-            value[k_name_type[0]] = new_value
+        return corrected_data_type
 
 
-    hi_dict[new_key] = value
+    @staticmethod
+    def csv_to_dict_keys_unique_column(source, unique_column_index):
+        df = pd.read_csv(source).astype(str)
 
-print(hi_dict)
+        key_column_head = df.columns[unique_column_index]
+        key_name_type = key_column_head.split('/')
+
+        df_rows = df.to_dict(orient='records')
+
+        hi_dict = {}
+
+        for row in df_rows:
+            new_key_str = row[key_column_head]
+
+            new_key = Game.convert_correct_data_type(new_key_str, key_name_type[1])
+
+            new_value = {}
+
+            for (k, v) in row.items():
+                if k != key_column_head:
+                    k_name_type = k.split('/')
+
+                    corrected_value = None if pd.isna(v) else Game.convert_correct_data_type(v, k_name_type[1])
+
+                    new_value[k_name_type[0]] = corrected_value
+
+            hi_dict[new_key] = new_value
+
+        return hi_dict
+
+
+print(type(Game.csv_to_dict_keys_unique_column('tiles.csv', 0)[(0,1)]['items']))
+
