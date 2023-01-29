@@ -9,5 +9,6 @@ class Level:
 
 level = Level("tiles.csv")
 
+print(level.tiles[(0, 1)].monsters[0])
 
 

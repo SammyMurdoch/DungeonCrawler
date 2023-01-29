@@ -1,3 +1,4 @@
 ﻿coord/tuple,items/list,monsters/list
 """(0, 1)""","""['sword', 'shield']""","""['zombie']"""
 """(0, 2)""","","""['zombie_rabbit']"""
+"""(0, 3)""","","""['zombie_llama']"""
