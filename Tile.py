@@ -36,15 +36,17 @@ class Tile:
 
         return displayed_string
 
+    def __add__(self, other):
+        if isinstance(other) == Item:
+            if self.items is None:
+                self.items = [other]
 
-    # def __str__(self) -> str:
-    #     return f'Items: {self.items}, Monsters: {self.monsters}'
-    #
-    # def __add__(self, other):
-    #     if isinstance(other) == Item:
-    #         self.items[other] = []  # get data from items class
-    #         pass
-    #
-    #     if isinstance(other) == Monster:
-    #         #self.monsters
-    #         pass
+            else:
+                self.items.append(other)
+
+        if isinstance(other) == Monster:
+            if self.monsters is None:
+                self.monsters = [other]
+
+            else:
+                self.monsters.append(other)

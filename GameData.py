@@ -25,7 +25,7 @@ class GameData:  # Class for running the game
 
         df_rows = df.to_dict(orient='records')
 
-        hi_dict = {}
+        df_dict = {}
 
         for row in df_rows:
             new_key_str = row[key_column_head]
@@ -35,12 +35,11 @@ class GameData:  # Class for running the game
             new_value = {}
 
             for (k, v) in row.items():
-                if k != key_column_head:
-                    k_name_type = k.split('/')
+                k_name_type = k.split('/')
 
-                    corrected_value = None if pd.isna(v) else GameData.convert_correct_data_type(v, k_name_type[1])
-                    new_value[k_name_type[0]] = corrected_value
+                corrected_value = None if pd.isna(v) else GameData.convert_correct_data_type(v, k_name_type[1])
+                new_value[k_name_type[0]] = corrected_value
 
-            hi_dict[new_key] = new_value
+            df_dict[new_key] = new_value
 
-        return hi_dict
+        return df_dict

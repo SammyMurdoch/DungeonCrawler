@@ -11,3 +11,10 @@ Level map is a list of sq
 Want a dictionary of tiles: key is the coordinate, value is a dictionary of items monsters ect
 
 A level is a dictionary of tile objects with attributes including lists of monsters and items
+
+
+Want a function that helps build an item/monster
+
+in item __init__ method it uses this function
+
+You will input a template and/or values to create either
