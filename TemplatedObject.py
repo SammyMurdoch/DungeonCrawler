@@ -10,7 +10,7 @@ class TemplatedObject:
         template_dict = templates[template]
 
         for attr in default_attributes:
-            if attr not in list(template_dict.keys()) + list(attribute_dict.keys()):
+            if attr not in list(template_dict.keys()) + list(attribute_dict.keys()):  # TODO this currently doesn't run as it will replace things in template
                 raise ValueError(f'Missing attribute: {attr}')
             if attr in attribute_dict:
                 setattr(TemplatedObject, attr, attribute_dict[attr])
