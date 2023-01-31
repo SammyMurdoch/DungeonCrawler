@@ -9,13 +9,10 @@ class Item(TemplatedObject):  # Have subclasses for weapons ect
     def __init__(self, template='template', **kwargs):
         TemplatedObject.__init__(self, template, Item.default_items, kwargs)
 
-    def __str__(self) -> str:  # TODO Implement a nicer thing like tile, do the same for monster too
-        return f'Name: {self.name}\nAttack Damage: {self.attack_damage}'
+    # def __str__(self) -> str:  # TODO Implement a nicer thing like tile, do the same for monster too
+    #     return f'Name: {self.name.capitalize()}\nAttack Damage: {self.attack_damage}'
 
 
-print(Item(attack_damage=1000))
-print(Item(template='sword', attack_damage=2))
 
-#print(hi)
 
-# Item()
+print(Item(template='sword', attack_damage=1010))  # TODO attributes must have _

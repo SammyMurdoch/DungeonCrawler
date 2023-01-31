@@ -8,11 +8,8 @@ class Monster(TemplatedObject):
     def __init__(self, template='template', **kwargs):
         TemplatedObject.__init__(self, template, Monster.default_items, kwargs)
 
-    def __str__(self) -> str:
-        return f'{self.name}:\nHit Points: {self.hit_points}, Attack Damage: {self.attack_damage}'
-
     def attack(self):
         return self.attack_damage
 
 
-print(Monster(attack_damage=5, name='zombie rabbit', template='snail'))
+print(Monster(template='snail', attack_damage='1'))

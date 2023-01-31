@@ -1,7 +1,7 @@
 from Monster import Monster
 from Item import Item
 
-class Tile:
+class Tile:  # TODO I probably also want this as as a templated class
     def __init__(self, tile_data):
         if tile_data['items'] is None:
             self.items = None
