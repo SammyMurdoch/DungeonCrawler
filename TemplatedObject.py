@@ -34,7 +34,7 @@ class TemplatedObject:
                 if isinstance(tile_attribute, int) or isinstance(tile_attribute, str):
                     displayed_string += str(getattr(self, attr)) + '\n'
                 elif hasattr(tile_attribute, '__iter__'):
-                    displayed_string += f'{", ".join([hi.name for hi in tile_attribute])}\n'
+                    displayed_string += f'{", ".join([t_attr.name for t_attr in tile_attribute])}\n'
                 else:
                     displayed_string += str(getattr(self, attr)) + '\n'  # TODO is there a better way, same line 2x
 

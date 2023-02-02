@@ -16,9 +16,7 @@ class Player:
         return self.attack_damage
 
 
-player = Player('Bob', 10, 10, [0, 1], None)
-
-player.move_x(10)
-player.move_y(12)
-
-print(player.coords)
+# player = Player('Bob', 10, 10, [0, 1], None)
+#
+# player.move_x(10)
+# player.move_y(12)

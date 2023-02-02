@@ -7,23 +7,19 @@ class Graphics:
 
     def display_graphics(self):
         pygame.init()
-        window_size = (700, 700)
-        dungeon_surf = pygame.display.set_mode(window_size)
 
-        player = Player(None, None, None, [35, 35], pygame.image.load("Player.png").convert_alpha())
+        dungeon_surf = pygame.display.set_mode((3840, 2400), pygame.FULLSCREEN)
+
+        rows = 10
+        columns = int((rows/5)*8)
+
+        square_size = dungeon_surf.get_height()//rows
+
+        player = Player(None, None, None, [0, 0], pygame.image.load("Player.png").convert_alpha())
 
         player_surf = player.texture
         player_rect = player_surf.get_rect()
         player_rect.center = player.coords
-
-        rows = 10
-        columns = 10
-        square_size = window_size[0] // rows
-
-        up_key = 273
-        down_key = 274
-        right_key = 275
-        left_key = 276
 
         while True:
             for event in pygame.event.get():
@@ -31,23 +27,24 @@ class Graphics:
                     pygame.quit()
                     exit()
 
-                elif event.type == pygame.KEYDOWN:
-                    print("yes")
-                    if event.key == pygame.K_UP:
-                        player.coords[1] -= 70
+                elif event.type == pygame.KEYDOWN:  # TODO make the coordinate of the square change not the pixel to be able to detect wall collisions
+                    if event.key == pygame.K_UP:  # TODO make this less code
+                        if (player.coords[0], player.coords[1] - 1) in self.display_tiles:
+                            player.coords[1] -= 1
                     elif event.key == pygame.K_DOWN:
-                        player.coords[1] += 70
+                        if (player.coords[0], player.coords[1] + 1) in self.display_tiles:
+                            player.coords[1] += 1
                     elif event.key == pygame.K_RIGHT:
-                        player.coords[0] += 70
+                        if (player.coords[0] + 1, player.coords[1]) in self.display_tiles:
+                            player.coords[0] += 1
                     elif event.key == pygame.K_LEFT:
-                        player.coords[0] -= 70
-
-                    print(player.coords)
+                        if (player.coords[0] - 1, player.coords[1]) in self.display_tiles:
+                            player.coords[0] -= 1
 
             dungeon_surf.fill((0, 0, 0))
 
-            player_rect.center = player.coords
 
+            player_rect.center = ((player.coords[0] + 1/2) * square_size, (player.coords[1] + 1/2) * square_size)  # TODO make this a function
             for row in range(rows):
                 for col in range(columns):
                     if (row, col) in self.display_tiles:
@@ -56,20 +53,15 @@ class Graphics:
                         else:
                             colour = (200, 100, 0)
 
-                        square = pygame.Rect(col * square_size, row * square_size, square_size, square_size)
+                        square = pygame.Rect(row * square_size, col * square_size, square_size, square_size)
                         pygame.draw.rect(dungeon_surf, colour, square)
 
-                        dungeon_surf.blit(player_surf, player_rect)
+            dungeon_surf.blit(player_surf, player_rect)
 
             pygame.display.update()
 
-
-hi = Graphics([(0, 0), (0, 1), (1, 1), (1, 2), (1, 3), (4, 5)])
+hi = Graphics([(0, 0), (0, 1), (1, 1), (1, 2), (1, 3), (1, 4), (2, 4), (2, 5), (3, 5), (4, 5), (2, 2), (3, 2), (4, 2),
+               (4, 3), (4, 4)])
 
 hi.display_graphics()
 
-# piece_rects[board[node][0][0]].center = board[node][2]
-# screen.blit(piece_surfs[board[node][0][0]], piece_rects[board[node][0][0]])
-# 
-# piece_surfs = {piece_type[0]: pygame.image.load(piece_type[2]).convert_alpha() for piece_type in piece_data.keys()}
-# piece_rects = {piece_type: piece_surfs[piece_type].get_rect() for piece_type in piece_surfs.keys()}

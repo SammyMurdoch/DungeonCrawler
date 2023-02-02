@@ -1,7 +1,7 @@
 from Monster import Monster
 from Item import Item
 
-class Tile:  # TODO I probably also want this as as a templated class
+class Tile:  # TODO I probably also want this as as a templated class and want to give it a coord so it can be displayed
     def __init__(self, tile_data):
         if tile_data['items'] is None:
             self.items = None

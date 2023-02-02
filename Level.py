@@ -9,6 +9,9 @@ class Level:
 
 level = Level("tiles.csv")
 
-print(level.tiles[(0, 2)])
+print(level.level_data.keys())
+
+for tile in level.level_data.keys():
+    print(level.tiles[tile])
 
 

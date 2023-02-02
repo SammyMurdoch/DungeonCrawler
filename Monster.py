@@ -12,4 +12,4 @@ class Monster(TemplatedObject):
         return self.attack_damage
 
 
-print(Monster(template='snail', attack_damage='1'))
+#print(Monster(template='snail', attack_damage='1'))

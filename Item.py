@@ -15,4 +15,4 @@ class Item(TemplatedObject):  # Have subclasses for weapons ect
 
 
 
-print(Item(template='sword', attack_damage=1010))  # TODO attributes must have _
+#print(Item(template='sword', attack_damage=1010))  # TODO attributes must have _
