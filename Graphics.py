@@ -4,14 +4,17 @@ from Level import Level
 import numpy as np
 
 class Graphics:
-    # def __init__(self, display_tiles):
-    #     self.display_tiles = display_tiles
-
     def __init__(self, tile_matrix):
         self.tile_matrix = tile_matrix
 
     def move_object(self, current_position, direction):  # TODO is this the right class to put this in? Perhaps have a movable object class which monster, player inherit from
         moved_position = (current_position[0] + direction[0], current_position[1] + direction[1])
+
+        if (moved_position[0] < 0) or (moved_position[0] >= len(self.tile_matrix[0])):
+            return current_position
+        elif (moved_position[1] < 0) or (moved_position[1] >= len(self.tile_matrix)):
+            return current_position
+
         if self.tile_matrix[moved_position[1], moved_position[0]]:
             return moved_position
         else:
@@ -57,29 +60,52 @@ class Graphics:
 
             dungeon_surf.fill((128, 128, 128))
 
-            for i, row in enumerate(self.tile_matrix):  # TODO make a function for displaying each object type, potentially in their own classes
+            r_l = (player.coords[0] // columns) * columns
+            r_u = r_l + columns + 1
+            c_l = (player.coords[1] // rows) * rows
+            c_u = c_l + rows + 1
+
+            print(self.tile_matrix[r_l: r_u, c_l: c_u])
+
+            for i, row in enumerate(self.tile_matrix[c_l: c_u, r_l: r_u]):  # TODO make a function for displaying each object type, potentially in their own classes
                 for j, col in enumerate(row):
                     if col:
                         tile_rect.topleft = (j*square_size, i*square_size)
                         dungeon_surf.blit(tile_surf, tile_rect)
 
-            player_rect.center = ((player.coords[0] + 1/2) * square_size, (player.coords[1] + 1/2) * square_size)  # TODO make this a function
+            player_centre_x = ((player.coords[0] % columns) + 1/2) * square_size
+            player_centre_y = ((player.coords[1] % rows) + 1/2) * square_size
+
+            player_rect.center = (player_centre_x, player_centre_y)
             dungeon_surf.blit(player_surf, player_rect)
 
             pygame.display.update()
+#
+tiles1 = np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                   [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                   [0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+                   [0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0],
+                   [0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0],
+                   [0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 0, 0, 1, 0],
+                   [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 0],
+                   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+                   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
 
-tiles = np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                  [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                  [0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                  [0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
-                  [0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0],
-                  [0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 0, 0, 1, 0],
-                  [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 0],
-                  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
-                  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
+tiles2 = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                   [1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                   [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+                   [0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 0],
+                   [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+                   [0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0],
+                   [1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
+
+
+tiles = np.concatenate((tiles1, tiles2), axis=1)
 
 dungeon = Graphics(tiles)
 
 dungeon.display_graphics()
-
