@@ -4,12 +4,15 @@ from Level import Level
 import numpy as np
 
 class Graphics:
-    def __init__(self, display_tiles):
-        self.display_tiles = display_tiles
+    # def __init__(self, display_tiles):
+    #     self.display_tiles = display_tiles
+
+    def __init__(self, tile_matrix):
+        self.tile_matrix = tile_matrix
 
     def move_object(self, current_position, direction):  # TODO is this the right class to put this in? Perhaps have a movable object class which monster, player inherit from
         moved_position = (current_position[0] + direction[0], current_position[1] + direction[1])
-        if moved_position in self.display_tiles:
+        if self.tile_matrix[moved_position[1], moved_position[0]]:
             return moved_position
         else:
             return current_position
@@ -34,6 +37,9 @@ class Graphics:
         player_rect = player_surf.get_rect()
         player_rect.center = player.coords
 
+        tile_surf = pygame.image.load("tile_hatch.png").convert_alpha()
+        tile_rect = tile_surf.get_rect()
+
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN:
@@ -51,21 +57,16 @@ class Graphics:
 
             dungeon_surf.fill((128, 128, 128))
 
-            for tile in self.display_tiles:  # TODO make a function for displaying each object type, potentially in their own classes
-                tile_surf = pygame.image.load("tile_hatch.png").convert_alpha()
-                tile_rect = tile_surf.get_rect()
-                tile_rect.topleft = (tile[0]*square_size, tile[1]*square_size)
-                dungeon_surf.blit(tile_surf, tile_rect)
+            for i, row in enumerate(self.tile_matrix):  # TODO make a function for displaying each object type, potentially in their own classes
+                for j, col in enumerate(row):
+                    if col:
+                        tile_rect.topleft = (j*square_size, i*square_size)
+                        dungeon_surf.blit(tile_surf, tile_rect)
 
             player_rect.center = ((player.coords[0] + 1/2) * square_size, (player.coords[1] + 1/2) * square_size)  # TODO make this a function
             dungeon_surf.blit(player_surf, player_rect)
 
             pygame.display.update()
-
-dungeon = Graphics([(0, 0), (0, 1), (1, 1), (1, 2), (1, 3), (1, 4), (2, 4), (2, 5), (3, 5), (4, 5), (2, 2), (3, 2), (4, 2),
-               (4, 3), (4, 4), (5, 4), (6, 4), (7, 4), (8, 4), (9, 4), (10, 4), (9, 5), (9, 6), (10, 6), (11, 6), (12, 6),
-               (13, 6), (13, 7), (13, 8), (12, 7), (12, 8), (14, 8), (15, 8), (11, 4), (12, 4), (12, 5)])
-
 
 tiles = np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                   [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -77,6 +78,8 @@ tiles = np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
                   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
+
+dungeon = Graphics(tiles)
 
 dungeon.display_graphics()
 
