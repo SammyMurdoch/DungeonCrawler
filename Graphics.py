@@ -5,6 +5,13 @@ class Graphics:
     def __init__(self, display_tiles):
         self.display_tiles = display_tiles
 
+    def move_object(self, current_position, direction):  # TODO is this the right class to put this in?
+        moved_position = (current_position[0] + direction[0], current_position[1] + direction[1])
+        if moved_position in self.display_tiles:
+            return moved_position
+        else:
+            return current_position
+
     def display_graphics(self):
         pygame.init()
 
@@ -15,7 +22,7 @@ class Graphics:
 
         square_size = dungeon_surf.get_height()//rows
 
-        player = Player(None, None, None, [0, 0], pygame.image.load("Player.png").convert_alpha())
+        player = Player(None, None, None, (0, 0), pygame.image.load("Player.png").convert_alpha())
 
         player_surf = player.texture
         player_rect = player_surf.get_rect()
@@ -27,30 +34,25 @@ class Graphics:
                     pygame.quit()
                     exit()
 
-                elif event.type == pygame.KEYDOWN:  # TODO make the coordinate of the square change not the pixel to be able to detect wall collisions
-                    if event.key == pygame.K_UP:  # TODO make this less code
-                        if (player.coords[0], player.coords[1] - 1) in self.display_tiles:
-                            player.coords[1] -= 1
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_UP:
+                        player.coords = Graphics.move_object(self, player.coords, [0, -1])
                     elif event.key == pygame.K_DOWN:
-                        if (player.coords[0], player.coords[1] + 1) in self.display_tiles:
-                            player.coords[1] += 1
+                        player.coords = Graphics.move_object(self, player.coords, [0, 1])
                     elif event.key == pygame.K_RIGHT:
-                        if (player.coords[0] + 1, player.coords[1]) in self.display_tiles:
-                            player.coords[0] += 1
+                        player.coords = Graphics.move_object(self, player.coords, [1, 0])
                     elif event.key == pygame.K_LEFT:
-                        if (player.coords[0] - 1, player.coords[1]) in self.display_tiles:
-                            player.coords[0] -= 1
+                        player.coords = Graphics.move_object(self, player.coords, [-1, 0])
 
             dungeon_surf.fill((128, 128, 128))
 
-            player_rect.center = ((player.coords[0] + 1/2) * square_size, (player.coords[1] + 1/2) * square_size)  # TODO make this a function
-
-            for tile in self.display_tiles:
+            for tile in self.display_tiles:  # TODO make a function for displaying each object type, potentially in their own classes
                 tile_surf = pygame.image.load("tile_hatch.png").convert_alpha()
                 tile_rect = tile_surf.get_rect()
                 tile_rect.topleft = (tile[0]*square_size, tile[1]*square_size)
                 dungeon_surf.blit(tile_surf, tile_rect)
 
+            player_rect.center = ((player.coords[0] + 1/2) * square_size, (player.coords[1] + 1/2) * square_size)  # TODO make this a function
             dungeon_surf.blit(player_surf, player_rect)
 
             pygame.display.update()
