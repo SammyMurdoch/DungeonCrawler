@@ -1,18 +1,24 @@
 import pygame
 from Player import Player
+from Level import Level
+import numpy as np
 
 class Graphics:
     def __init__(self, display_tiles):
         self.display_tiles = display_tiles
 
-    def move_object(self, current_position, direction):  # TODO is this the right class to put this in?
+    def move_object(self, current_position, direction):  # TODO is this the right class to put this in? Perhaps have a movable object class which monster, player inherit from
         moved_position = (current_position[0] + direction[0], current_position[1] + direction[1])
         if moved_position in self.display_tiles:
             return moved_position
         else:
             return current_position
 
-    def display_graphics(self):
+    #def generate_tile_position(self, tiles):
+
+
+
+    def display_graphics(self):  # TODO once you reach the edge of the screen display the next set of tiles
         pygame.init()
 
         dungeon_surf = pygame.display.set_mode((3840, 2400), pygame.FULLSCREEN)
@@ -30,11 +36,7 @@ class Graphics:
 
         while True:
             for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    exit()
-
-                elif event.type == pygame.KEYDOWN:
+                if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_UP:
                         player.coords = Graphics.move_object(self, player.coords, [0, -1])
                     elif event.key == pygame.K_DOWN:
@@ -43,6 +45,9 @@ class Graphics:
                         player.coords = Graphics.move_object(self, player.coords, [1, 0])
                     elif event.key == pygame.K_LEFT:
                         player.coords = Graphics.move_object(self, player.coords, [-1, 0])
+                    elif event.key == pygame.K_ESCAPE:
+                        pygame.quit()
+                        exit()
 
             dungeon_surf.fill((128, 128, 128))
 
@@ -57,9 +62,21 @@ class Graphics:
 
             pygame.display.update()
 
-hi = Graphics([(0, 0), (0, 1), (1, 1), (1, 2), (1, 3), (1, 4), (2, 4), (2, 5), (3, 5), (4, 5), (2, 2), (3, 2), (4, 2),
+dungeon = Graphics([(0, 0), (0, 1), (1, 1), (1, 2), (1, 3), (1, 4), (2, 4), (2, 5), (3, 5), (4, 5), (2, 2), (3, 2), (4, 2),
                (4, 3), (4, 4), (5, 4), (6, 4), (7, 4), (8, 4), (9, 4), (10, 4), (9, 5), (9, 6), (10, 6), (11, 6), (12, 6),
                (13, 6), (13, 7), (13, 8), (12, 7), (12, 8), (14, 8), (15, 8), (11, 4), (12, 4), (12, 5)])
 
-hi.display_graphics()
+
+tiles = np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                  [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                  [0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                  [0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+                  [0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0],
+                  [0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 0, 0, 1, 0],
+                  [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 0],
+                  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+                  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
+
+dungeon.display_graphics()
 
