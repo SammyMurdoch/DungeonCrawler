@@ -40,7 +40,7 @@ class Graphics:
         player_rect = player_surf.get_rect()
         player_rect.center = player.coords
 
-        tile_surf = pygame.image.load("tile_hatch.png").convert_alpha()
+        tile_surf = pygame.image.load("tile3.png").convert_alpha()
         tile_rect = tile_surf.get_rect()
 
         while True:
@@ -134,3 +134,34 @@ tiles = np.concatenate((tilesu, tilesl), axis=0)
 dungeon = Graphics(tiles)
 
 dungeon.display_graphics()
+
+
+
+# def solution(table):
+#     n = len(table) // 2
+#     rows = ((2 * n - 1) // 2) + n
+#     longest_row = rows//2 * 2 + 2
+#     row_lengths = [[(2 * (i + 1)) if i <= (rows // 2) else (2 * (rows - i))] for i in range(rows)]
+#
+#     diamond = [[None for i in range(longest_row)] for i in range(longest_row)]
+#     row_n = rows-1
+#     item_n = longest_row//2
+#
+#     for j in range(len(diamond)):
+#         for i in range(n):
+#             diamond[row_n][item_n] = table[]
+#             row_n -= 1
+#             item_n += 1
+#
+#         row_n += n - 1
+#         item_n -= n
+#
+#     return diamond
+#
+# print(solution([['a', 'b', 'c'],
+#          ['d', 'e', 'f'],
+#          ['g', 'h', 'i'],
+#          ['j', 'k', 'l'],
+#          ['m', 'n', 'o'],
+#          ['p', 'q', 'r']]))
+#
