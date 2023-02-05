@@ -10,7 +10,7 @@ class MatrixedObject:  # TODO inherit from dungeon which has dungeon_surf and gr
         self.rect = self.surf.get_rect()
         self.grid_spacing = grid_spacing
 
-    def display(self, display_surf, cols, rows):
+    def display(self, display_surf, cols, rows, rotation=0):
         for i, row in enumerate(self.matrix[rows[0]: rows[1], cols[0]: cols[1]]):
             for j, col in enumerate(row):
                 if col:
@@ -22,7 +22,12 @@ class Walls(MatrixedObject):
     def __init__(self, tile_matrix, position, grid_spacing):
         self.position = position
         matrix = Walls.create_wall_matrix(tile_matrix, self.position)
-        MatrixedObject.__init__(self, matrix, "wall.png", grid_spacing)
+        textures = {"top": "wall_top.png",
+                    "right": "wall_right.png",
+                    "bottom": "wall_bottom.png",
+                    "left": "wall_left.png"}
+
+        MatrixedObject.__init__(self, matrix, textures[position], grid_spacing)
 
     @staticmethod
     def create_wall_matrix(tile_matrix, position):
@@ -54,6 +59,13 @@ class Walls(MatrixedObject):
         matrix[matrix > 0] = 0
         matrix *= -1
 
+        if position == 'bottom':
+            matrix = matrix[::-1]
+        elif position == 'right': #  transpose and flip along vertical
+            matrix = tile_matrix.transpose()[::-1]
+        elif position == 'left':
+            matrix = tile_matrix.transpose()
+
         return matrix
 
 
@@ -70,7 +82,13 @@ class Graphics:
         self.dungeon = Dungeon()
 
         self.tiles = MatrixedObject(tile_matrix, "tile_hatch.png", self.dungeon.square_size)
+
         self.walls_top = Walls(tile_matrix, "top", self.dungeon.square_size)
+        self.walls_bottom = Walls(tile_matrix, "bottom", self.dungeon.square_size)
+
+        self.walls_right = Walls(tile_matrix, "right", self.dungeon.square_size)
+        self.walls_left = Walls(tile_matrix, "left", self.dungeon.square_size)
+
 
     def move_object(self, current_position, direction):  # TODO is this the right class to put this in? Perhaps have a movable object class which monster, player inherit from
         moved_position = (current_position[0] + direction[0], current_position[1] + direction[1])
@@ -84,8 +102,6 @@ class Graphics:
             return moved_position
         else:
             return current_position
-
-    #def generate_tile_position(self, tiles):
 
     def display_graphics(self):
         pygame.init()
@@ -112,7 +128,7 @@ class Graphics:
                         exit()
 
 
-            r_l = (player.coords[0] // self.dungeon.columns) * self.dungeon.columns
+            r_l = (player.coords[0] // self.dungeon.columns) * self.dungeon.columns  # TODO put this in a function
             r_u = r_l + self.dungeon.columns + 1
             c_l = (player.coords[1] // self.dungeon.rows) * self.dungeon.rows
             c_u = c_l + self.dungeon.rows + 1
@@ -120,7 +136,12 @@ class Graphics:
             self.dungeon.surf.fill((128, 128, 128))
 
             self.tiles.display(self.dungeon.surf, [r_l, r_u], [c_l, c_u])
+
             self.walls_top.display(self.dungeon.surf, [r_l, r_u], [c_l, c_u])
+            self.walls_bottom.display(self.dungeon.surf, [r_l, r_u], [c_l, c_u])
+
+            #self.walls_right.display(self.dungeon.surf, [r_l, r_u], [c_l, c_u])
+            #self.walls_left.display(self.dungeon.surf, [r_l, r_u], [c_l, c_u])
 
             player_centre_x = ((player.coords[0] % self.dungeon.columns) + 1/2) * self.dungeon.square_size
             player_centre_y = ((player.coords[1] % self.dungeon.rows) + 1/2) * self.dungeon.square_size
