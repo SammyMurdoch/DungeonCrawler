@@ -3,6 +3,46 @@ from Player import Player
 from Level import Level
 import numpy as np
 
+class Walls:
+    def __init__(self, tile_matrix):
+        self.tile_matrix = tile_matrix
+        self.wall_matrices = {
+            "top": Walls.create_wall_matrix(self, 'top'),
+            "right": Walls.create_wall_matrix(self, 'right'),
+            "bottom": Walls.create_wall_matrix(self, 'bottom'),
+            "left": Walls.create_wall_matrix(self, 'left')}
+
+    def create_wall_matrix(self, position):
+        """Create a matrix for the walls in a given rotation."""
+        # first row is the same, the rest of the rows are sum of the row above and the current row mod 2
+        tile_matrix_shape = self.tile_matrix.shape
+
+        if position in ["top", "bottom"]:
+            matrix = np.zeros(tile_matrix_shape)
+        else:
+            matrix = np.zeros(tile_matrix_shape[::-1])
+
+        if position == 'top':
+            template_matrix = self.tile_matrix
+        elif position == 'bottom':
+            template_matrix = self.tile_matrix[::-1]
+        elif position == 'right': #  transpose and flip along vertical
+            template_matrix = self.tile_matrix.transpose()[::-1]
+        elif position == 'left':
+            template_matrix = self.tile_matrix.transpose()
+
+        for i in range(len(matrix)):
+            if not i:
+                matrix[i] = -1 * template_matrix[i]
+            else:
+                matrix[i] += (template_matrix[i] - template_matrix[i-1])
+
+        matrix[matrix > 0] = 0
+        matrix *= -1
+
+        return matrix
+
+
 class Graphics:
     def __init__(self, tile_matrix):
         self.tile_matrix = tile_matrix
@@ -20,6 +60,14 @@ class Graphics:
         else:
             return current_position
 
+    # def display_object_matrix(self, object_matrix):
+    #     for i, row in enumerate(walls_top[c_l: c_u, r_l: r_u]):  # TODO make a function for displaying each object type, potentially in their own classes
+    #         for j, col in enumerate(row):
+    #             if col:
+    #                 wall_rect.topleft = (j * square_size, i * square_size)
+    #                 dungeon_surf.blit(wall_surf, wall_rect)
+
+
     #def generate_tile_position(self, tiles):
 
 
@@ -34,14 +82,17 @@ class Graphics:
 
         square_size = dungeon_surf.get_height() // rows
 
-        player = Player(None, None, None, (0, 0), pygame.image.load("Player.png").convert_alpha())
+        player = Player(None, None, None, (1, 1), pygame.image.load("player.png").convert_alpha())
 
         player_surf = player.texture
         player_rect = player_surf.get_rect()
         player_rect.center = player.coords
 
-        tile_surf = pygame.image.load("tile3.png").convert_alpha()
+        tile_surf = pygame.image.load("tile_hatch.png").convert_alpha()
         tile_rect = tile_surf.get_rect()
+
+        wall_surf = pygame.image.load("wall.png").convert_alpha()
+        wall_rect = wall_surf.get_rect()
 
         while True:
             for event in pygame.event.get():
@@ -65,11 +116,23 @@ class Graphics:
             c_l = (player.coords[1] // rows) * rows
             c_u = c_l + rows + 1
 
+            ####TILES
+
             for i, row in enumerate(self.tile_matrix[c_l: c_u, r_l: r_u]):  # TODO make a function for displaying each object type, potentially in their own classes
                 for j, col in enumerate(row):
                     if col:
                         tile_rect.topleft = (j*square_size, i*square_size)
                         dungeon_surf.blit(tile_surf, tile_rect)
+
+            ####WALLS
+            walls_top = Walls(tiles).wall_matrices["top"]
+            walls_bottom = Walls(tiles).wall_matrices["bottom"]
+
+            for i, row in enumerate(walls_top[c_l: c_u, r_l: r_u]):  # TODO make a function for displaying each object type, potentially in their own classes
+                for j, col in enumerate(row):
+                    if col:
+                        wall_rect.topleft = (j*square_size, i*square_size)
+                        dungeon_surf.blit(wall_surf, wall_rect)
 
             player_centre_x = ((player.coords[0] % columns) + 1/2) * square_size
             player_centre_y = ((player.coords[1] % rows) + 1/2) * square_size
@@ -79,16 +142,16 @@ class Graphics:
 
             pygame.display.update()
 #
-tiles1 = np.array([[1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                   [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                   [0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+tiles1 = np.array([[0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                   [0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                   [0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
                    [0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0],
                    [0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0],
-                   [0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 0, 0, 1, 0],
-                   [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 0],
-                   [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1],
-                   [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-                   [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0]])
+                   [0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 0, 0, 1, 0],
+                   [0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 0],
+                   [0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1],
+                   [0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+                   [0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0]])
 
 tiles2 = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -101,12 +164,12 @@ tiles2 = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                    [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
                    [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0]])
 
-tiles3 = np.array([[0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-                   [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0],
-                   [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0],
-                   [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0],
-                   [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1],
-                   [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+tiles3 = np.array([[0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+                   [0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0],
+                   [0, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0],
+                   [0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0],
+                   [0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1],
+                   [0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
                    [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0],
                    [0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                    [0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -121,14 +184,11 @@ tiles4 = np.array([[0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
                    [0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0],
                    [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0],
                    [0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0],
-                   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
-
-
-
+                   [0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
 
 tilesu = np.concatenate((tiles1, tiles2), axis=1)
 tilesl = np.concatenate((tiles3, tiles4), axis=1)
-
+#
 tiles = np.concatenate((tilesu, tilesl), axis=0)
 
 dungeon = Graphics(tiles)
@@ -137,31 +197,4 @@ dungeon.display_graphics()
 
 
 
-# def solution(table):
-#     n = len(table) // 2
-#     rows = ((2 * n - 1) // 2) + n
-#     longest_row = rows//2 * 2 + 2
-#     row_lengths = [[(2 * (i + 1)) if i <= (rows // 2) else (2 * (rows - i))] for i in range(rows)]
-#
-#     diamond = [[None for i in range(longest_row)] for i in range(longest_row)]
-#     row_n = rows-1
-#     item_n = longest_row//2
-#
-#     for j in range(len(diamond)):
-#         for i in range(n):
-#             diamond[row_n][item_n] = table[]
-#             row_n -= 1
-#             item_n += 1
-#
-#         row_n += n - 1
-#         item_n -= n
-#
-#     return diamond
-#
-# print(solution([['a', 'b', 'c'],
-#          ['d', 'e', 'f'],
-#          ['g', 'h', 'i'],
-#          ['j', 'k', 'l'],
-#          ['m', 'n', 'o'],
-#          ['p', 'q', 'r']]))
-#
+
