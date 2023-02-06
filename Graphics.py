@@ -6,7 +6,7 @@ import numpy as np
 class MatrixedObject:  # TODO inherit from dungeon which has dungeon_surf and grid_spacing
     def __init__(self, matrix, texture_path, grid_spacing):
         self.matrix = matrix
-        self.surf = pygame.image.load(texture_path).convert_alpha()
+        self.surf = pygame.image.load(texture_path).convert_alpha()  # TODO for testing reasons, don't have this in a function
         self.rect = self.surf.get_rect()
         self.grid_spacing = grid_spacing
 
@@ -62,9 +62,9 @@ class Walls(MatrixedObject):
         if position == 'bottom':
             matrix = matrix[::-1]
         elif position == 'right': #  transpose and flip along vertical
-            matrix = tile_matrix.transpose()[::-1]
+            matrix = matrix[::-1].transpose()
         elif position == 'left':
-            matrix = tile_matrix.transpose()
+            matrix = matrix.transpose()
 
         return matrix
 
@@ -133,15 +133,15 @@ class Graphics:
             c_l = (player.coords[1] // self.dungeon.rows) * self.dungeon.rows
             c_u = c_l + self.dungeon.rows + 1
 
-            self.dungeon.surf.fill((128, 128, 128))
+            self.dungeon.surf.fill((160, 160, 160))
 
             self.tiles.display(self.dungeon.surf, [r_l, r_u], [c_l, c_u])
 
             self.walls_top.display(self.dungeon.surf, [r_l, r_u], [c_l, c_u])
             self.walls_bottom.display(self.dungeon.surf, [r_l, r_u], [c_l, c_u])
 
-            #self.walls_right.display(self.dungeon.surf, [r_l, r_u], [c_l, c_u])
-            #self.walls_left.display(self.dungeon.surf, [r_l, r_u], [c_l, c_u])
+            self.walls_right.display(self.dungeon.surf, [r_l, r_u], [c_l, c_u])
+            self.walls_left.display(self.dungeon.surf, [r_l, r_u], [c_l, c_u])
 
             player_centre_x = ((player.coords[0] % self.dungeon.columns) + 1/2) * self.dungeon.square_size
             player_centre_y = ((player.coords[1] % self.dungeon.rows) + 1/2) * self.dungeon.square_size
@@ -151,7 +151,7 @@ class Graphics:
 
             pygame.display.update()
 #
-tiles1 = np.array([[0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+tiles1 = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                    [0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                    [0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
                    [0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0],
@@ -200,10 +200,16 @@ tilesl = np.concatenate((tiles3, tiles4), axis=1)
 
 tiles = np.concatenate((tilesu, tilesl), axis=0)
 
+#print(Walls(tiles1, "right", 96).matrix)
+
+
 dungeon = Graphics(tiles, (0, 0))
 
 dungeon.display_graphics()
-
-
+#
+# tiles = np.array([[1, 0, 1], [1, 1, 1], [0, 0, 1]])
+#
+#
+#
 
 
