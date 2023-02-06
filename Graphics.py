@@ -1,6 +1,5 @@
 import pygame
 from Player import Player
-from Level import Level
 import numpy as np
 
 class MatrixedObject:  # TODO inherit from dungeon which has dungeon_surf and grid_spacing
@@ -10,7 +9,7 @@ class MatrixedObject:  # TODO inherit from dungeon which has dungeon_surf and gr
         self.rect = self.surf.get_rect()
         self.grid_spacing = grid_spacing
 
-    def display(self, display_surf, cols, rows, rotation=0):
+    def display(self, display_surf, cols, rows):
         for i, row in enumerate(self.matrix[rows[0]: rows[1], cols[0]: cols[1]]):
             for j, col in enumerate(row):
                 if col:
@@ -19,9 +18,9 @@ class MatrixedObject:  # TODO inherit from dungeon which has dungeon_surf and gr
 
 
 class Walls(MatrixedObject):
-    def __init__(self, tile_matrix, position, grid_spacing):
+    def __init__(self, tile_matrix, position, grid_spacing, rows, cols):
         self.position = position
-        matrix = Walls.create_wall_matrix(tile_matrix, self.position)
+        matrix = Walls.create_wall_matrix(tile_matrix, self.position, rows, cols)
         textures = {"top": "wall_top.png",
                     "right": "wall_right.png",
                     "bottom": "wall_bottom.png",
@@ -30,14 +29,16 @@ class Walls(MatrixedObject):
         MatrixedObject.__init__(self, matrix, textures[position], grid_spacing)
 
     @staticmethod
-    def create_wall_matrix(tile_matrix, position):
+    def create_wall_matrix(tile_matrix, position, rows, cols):  # TODO split this up
         """Create a matrix for the walls in a given rotation."""
         tile_matrix_shape = tile_matrix.shape
 
         if position in ["top", "bottom"]:
             matrix = np.zeros(tile_matrix_shape)
+            different_wall_freq = rows
         else:
             matrix = np.zeros(tile_matrix_shape[::-1])
+            different_wall_freq = cols
 
         if position == 'top':
             template_matrix = tile_matrix
@@ -50,9 +51,12 @@ class Walls(MatrixedObject):
         else:
             raise AttributeError
 
-        for i in range(len(matrix)):
-            if not i:
-                matrix[i] = -1 * template_matrix[i]
+        for i in range(len(matrix)):  # Probably should be a function
+            if not i % different_wall_freq:  # TODO make this at the sized of the screen not sides of the matrix this solves the problem but leads to exits blocked
+                if not i:
+                    matrix[i] = -1 * template_matrix[i]
+                else:
+                    matrix[i] = -1 * template_matrix[i] + template_matrix[i-1]
             else:
                 matrix[i] += (template_matrix[i] - template_matrix[i-1])
 
@@ -61,7 +65,7 @@ class Walls(MatrixedObject):
 
         if position == 'bottom':
             matrix = matrix[::-1]
-        elif position == 'right': #  transpose and flip along vertical
+        elif position == 'right':
             matrix = matrix[::-1].transpose()
         elif position == 'left':
             matrix = matrix.transpose()
@@ -83,11 +87,11 @@ class Graphics:
 
         self.tiles = MatrixedObject(tile_matrix, "tile_hatch.png", self.dungeon.square_size)
 
-        self.walls_top = Walls(tile_matrix, "top", self.dungeon.square_size)
-        self.walls_bottom = Walls(tile_matrix, "bottom", self.dungeon.square_size)
+        self.walls_top = Walls(tile_matrix, "top", self.dungeon.square_size, self.dungeon.rows, self.dungeon.columns)
+        self.walls_bottom = Walls(tile_matrix, "bottom", self.dungeon.square_size, self.dungeon.rows, self.dungeon.columns)
 
-        self.walls_right = Walls(tile_matrix, "right", self.dungeon.square_size)
-        self.walls_left = Walls(tile_matrix, "left", self.dungeon.square_size)
+        self.walls_right = Walls(tile_matrix, "right", self.dungeon.square_size, self.dungeon.rows, self.dungeon.columns)
+        self.walls_left = Walls(tile_matrix, "left", self.dungeon.square_size, self.dungeon.rows, self.dungeon.columns)
 
 
     def move_object(self, current_position, direction):  # TODO is this the right class to put this in? Perhaps have a movable object class which monster, player inherit from
@@ -139,13 +143,11 @@ class Graphics:
 
             self.walls_top.display(self.dungeon.surf, [r_l, r_u], [c_l, c_u])
             self.walls_bottom.display(self.dungeon.surf, [r_l, r_u], [c_l, c_u])
-
             self.walls_right.display(self.dungeon.surf, [r_l, r_u], [c_l, c_u])
             self.walls_left.display(self.dungeon.surf, [r_l, r_u], [c_l, c_u])
 
             player_centre_x = ((player.coords[0] % self.dungeon.columns) + 1/2) * self.dungeon.square_size
             player_centre_y = ((player.coords[1] % self.dungeon.rows) + 1/2) * self.dungeon.square_size
-
             player_rect.center = (player_centre_x, player_centre_y)
             self.dungeon.surf.blit(player_surf, player_rect)
 
@@ -166,50 +168,62 @@ tiles2 = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                    [1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                    [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                   [0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0],
-                   [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
-                   [0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0],
+                   [0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1],
+                   [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                   [0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1],
                    [1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
                    [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
                    [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0]])
 
-tiles3 = np.array([[0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+tiles3 = np.array([[1, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
                    [0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0],
                    [0, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0],
                    [0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0],
                    [0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1],
-                   [0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
-                   [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0],
-                   [0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                   [0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
+                   [0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0],
+                   [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0],
+                   [0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0],
+                   [0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0],
+                   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0]])
 
 tiles4 = np.array([[0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
                    [0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
                    [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
                    [0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
                    [1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0],
-                   [0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0],
+                   [0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1],
                    [0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0],
                    [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0],
                    [0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0],
                    [0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
 
-tilesu = np.concatenate((tiles1, tiles2), axis=1)
-tilesl = np.concatenate((tiles3, tiles4), axis=1)
+tiles5 = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                   [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
+                   [1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 0, 0],
+                   [1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                   [1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                   [0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0],
+                   [0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0],
+                   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0]])
+
+tiles6 = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+                   [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0],
+                   [0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0],
+                   [0, 0, 1, 0, 1, 0, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0],
+                   [0, 1, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0],
+                   [1, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+                   [0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+                   [0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 0],
+                   [0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
+                   [0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0]])
+
+tilesu = np.concatenate((tiles1, tiles2, tiles5), axis=1)
+tilesl = np.concatenate((tiles3, tiles4, tiles6), axis=1)
 
 tiles = np.concatenate((tilesu, tilesl), axis=0)
-
-#print(Walls(tiles1, "right", 96).matrix)
-
 
 dungeon = Graphics(tiles, (0, 0))
 
 dungeon.display_graphics()
-#
-# tiles = np.array([[1, 0, 1], [1, 1, 1], [0, 0, 1]])
-#
-#
-#
-
-
