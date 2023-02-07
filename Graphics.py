@@ -77,7 +77,7 @@ class Dungeon:
     def __init__(self):
         self.surf = pygame.display.set_mode((3840, 2400), pygame.FULLSCREEN)
         self.rows = 10 #  TODO changing this doesn't work as the tile/player can't be scaled
-        self.columns = int((self.rows/5)*8)  # TODO not used but could be needed to set bounds on coordinates
+        self.columns = int((self.rows/5)*8)
         self.square_size = self.surf.get_height() // self.rows
 
 
@@ -89,7 +89,6 @@ class Graphics:
 
         self.walls_top = Walls(tile_matrix, "top", self.dungeon.square_size, self.dungeon.rows, self.dungeon.columns)
         self.walls_bottom = Walls(tile_matrix, "bottom", self.dungeon.square_size, self.dungeon.rows, self.dungeon.columns)
-
         self.walls_right = Walls(tile_matrix, "right", self.dungeon.square_size, self.dungeon.rows, self.dungeon.columns)
         self.walls_left = Walls(tile_matrix, "left", self.dungeon.square_size, self.dungeon.rows, self.dungeon.columns)
 
@@ -119,13 +118,13 @@ class Graphics:
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_UP:
+                    if event.key in [pygame.K_w, pygame.K_UP]:
                         player.coords = Graphics.move_object(self, player.coords, [0, -1])
-                    elif event.key == pygame.K_DOWN:
+                    elif event.key in [pygame.K_s, pygame.K_DOWN]:
                         player.coords = Graphics.move_object(self, player.coords, [0, 1])
-                    elif event.key == pygame.K_RIGHT:
+                    elif event.key in [pygame.K_d, pygame.K_RIGHT]:
                         player.coords = Graphics.move_object(self, player.coords, [1, 0])
-                    elif event.key == pygame.K_LEFT:
+                    elif event.key in [pygame.K_a, pygame.K_LEFT]:
                         player.coords = Graphics.move_object(self, player.coords, [-1, 0])
                     elif event.key == pygame.K_ESCAPE:
                         pygame.quit()
@@ -175,10 +174,10 @@ tiles2 = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                    [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
                    [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0]])
 
-tiles3 = np.array([[1, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-                   [0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0],
-                   [0, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0],
-                   [0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0],
+tiles3 = np.array([[0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0],
+                   [0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 1, 0],
+                   [0, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 0],
+                   [0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 0],
                    [0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1],
                    [0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0],
                    [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0],
