@@ -19,15 +19,15 @@ class MatrixedObject:  # TODO inherit from dungeon which has dungeon_surf and gr
 
 
 class Walls(MatrixedObject):
-    def __init__(self, tile_matrix, position, grid_spacing, rows, cols, rotation):
+    def __init__(self, tile_matrix, position, grid_spacing, rows, cols):
         self.position = position
         matrix = Walls.create_wall_matrix(tile_matrix, self.position, rows, cols)
-        textures = {"top": "wall.png",
-                    "right": "wall.png",
-                    "bottom": "wall.png",
-                    "left": "wall.png"}
+        wall_data = {"top": {"texture": "wall.png", "rotation": 0},
+                    "right": {"texture": "wall.png", "rotation": 270},
+                    "bottom": {"texture": "wall.png", "rotation": 180},
+                    "left": {"texture": "wall.png", "rotation": 90}}
 
-        MatrixedObject.__init__(self, matrix, textures[position], grid_spacing, rotation=rotation)
+        MatrixedObject.__init__(self, matrix, wall_data[position]["texture"], grid_spacing, rotation=wall_data[position]["rotation"])
 
     @staticmethod
     def create_wall_matrix(tile_matrix, position, rows, cols):  # TODO split this up
@@ -88,10 +88,10 @@ class Graphics:
 
         self.tiles = MatrixedObject(tile_matrix, "tile_hatch.png", self.dungeon.square_size)
 
-        self.walls_top = Walls(tile_matrix, "top", self.dungeon.square_size, self.dungeon.rows, self.dungeon.columns, 0)
-        self.walls_bottom = Walls(tile_matrix, "bottom", self.dungeon.square_size, self.dungeon.rows, self.dungeon.columns, 180)
-        self.walls_right = Walls(tile_matrix, "right", self.dungeon.square_size, self.dungeon.rows, self.dungeon.columns, 270)
-        self.walls_left = Walls(tile_matrix, "left", self.dungeon.square_size, self.dungeon.rows, self.dungeon.columns, 90)
+        self.walls_top = Walls(tile_matrix, "top", self.dungeon.square_size, self.dungeon.rows, self.dungeon.columns)
+        self.walls_bottom = Walls(tile_matrix, "bottom", self.dungeon.square_size, self.dungeon.rows, self.dungeon.columns)
+        self.walls_right = Walls(tile_matrix, "right", self.dungeon.square_size, self.dungeon.rows, self.dungeon.columns)
+        self.walls_left = Walls(tile_matrix, "left", self.dungeon.square_size, self.dungeon.rows, self.dungeon.columns)
 
 
     def move_object(self, current_position, direction):  # TODO is this the right class to put this in? Perhaps have a movable object class which monster, player inherit from
