@@ -2,6 +2,9 @@ import pygame
 from Player import Player
 import numpy as np
 
+import networkx as nx
+
+
 class MatrixedObject:  # TODO inherit from dungeon which has dungeon_surf and grid_spacing
     def __init__(self, matrix, texture_path, grid_spacing, rotation=0):
         self.matrix = matrix
@@ -16,6 +19,18 @@ class MatrixedObject:  # TODO inherit from dungeon which has dungeon_surf and gr
                 if col:
                     self.rect.topleft = (j * self.grid_spacing, i * self.grid_spacing)
                     display_surf.blit(self.surf, self.rect)
+
+
+class Tiles(MatrixedObject):
+    def __init__(self):
+        pass
+
+    #self.tiles = MatrixedObject.__init__(tile_matrix, "tile_hatch.png", self.dungeon.square_size)
+
+    # def generate_tile_graph(self):
+    #     tile_count = sum(self.tile_matrix)
+    #     tile_graph = np.zeros(tile_count, tile_count)
+
 
 
 class Walls(MatrixedObject):
@@ -72,6 +87,8 @@ class Walls(MatrixedObject):
             matrix = matrix.transpose()
 
         return matrix
+
+    # def create_corner_wall_matrix(self):
 
 
 class Dungeon:
@@ -227,3 +244,33 @@ tiles = np.concatenate((tilesu, tilesl), axis=0)
 dungeon = Graphics(tiles, (0, 0))
 
 dungeon.display_graphics()
+
+
+def generate_tile_graph(tile_matrix):
+    tile_matrix = np.pad(tile_matrix, pad_width=1)
+
+    tile_locations_x, tile_locations_y = np.where(tile_matrix)
+    tile_locations = list(zip(tile_locations_x, tile_locations_y))
+    tile_dict = dict(zip(tile_locations, list(range(len(tile_locations)))))
+    tile_dict_reversed = dict(zip(list(range(len(tile_locations))), [(i-1, j-1) for (i, j) in tile_locations]))
+
+    tile_adjacency_mat = np.zeros((len(tile_locations), len(tile_locations)))
+
+    directions = [np.array([1, 0]), np.array([-1, 0]), np.array([0, 1]), np.array([0, -1])]
+
+    for r, tile in enumerate(tile_locations):
+        for direction in directions:
+            potential_tile = tuple(np.array(tile) + direction)
+            if potential_tile in tile_locations:
+                tile_adjacency_mat[r, tile_dict[potential_tile]] = 1
+
+    return tile_adjacency_mat, tile_dict_reversed
+
+
+adj, node_names = generate_tile_graph(tiles)
+
+tile_graph = nx.from_numpy_array(adj)
+
+tile_graph = nx.relabel_nodes(tile_graph, node_names)
+
+print(nx.shortest_path(tile_graph, (1, 1), (9, 7)))
