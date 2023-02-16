@@ -251,11 +251,11 @@ def generate_tile_graph(tile_matrix):
 
     tile_locations_x, tile_locations_y = np.where(tile_matrix)
     tile_locations = list(zip(tile_locations_x, tile_locations_y))
+
     tile_dict = dict(zip(tile_locations, list(range(len(tile_locations)))))
     tile_dict_reversed = dict(zip(list(range(len(tile_locations))), [(i-1, j-1) for (i, j) in tile_locations]))
 
     tile_adjacency_mat = np.zeros((len(tile_locations), len(tile_locations)))
-
     directions = [np.array([1, 0]), np.array([-1, 0]), np.array([0, 1]), np.array([0, -1])]
 
     for r, tile in enumerate(tile_locations):
@@ -264,13 +264,12 @@ def generate_tile_graph(tile_matrix):
             if potential_tile in tile_locations:
                 tile_adjacency_mat[r, tile_dict[potential_tile]] = 1
 
-    return tile_adjacency_mat, tile_dict_reversed
+    graph = nx.from_numpy_array(tile_adjacency_mat)
+    graph = nx.relabel_nodes(graph, tile_dict_reversed)
+
+    return graph
 
 
-adj, node_names = generate_tile_graph(tiles)
-
-tile_graph = nx.from_numpy_array(adj)
-
-tile_graph = nx.relabel_nodes(tile_graph, node_names)
+tile_graph = generate_tile_graph(tiles)
 
 print(nx.shortest_path(tile_graph, (1, 1), (9, 7)))
