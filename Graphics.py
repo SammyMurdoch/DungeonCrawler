@@ -1,7 +1,8 @@
 import pygame
 from Player import Player
+from Monster import Monster
 import numpy as np
-
+from Level import Level, level
 import networkx as nx
 
 
@@ -19,18 +20,6 @@ class MatrixedObject:  # TODO inherit from dungeon which has dungeon_surf and gr
                 if col:
                     self.rect.topleft = (j * self.grid_spacing, i * self.grid_spacing)
                     display_surf.blit(self.surf, self.rect)
-
-
-class Tiles(MatrixedObject):
-    def __init__(self):
-        pass
-
-    #self.tiles = MatrixedObject.__init__(tile_matrix, "tile_hatch.png", self.dungeon.square_size)
-
-    # def generate_tile_graph(self):
-    #     tile_count = sum(self.tile_matrix)
-    #     tile_graph = np.zeros(tile_count, tile_count)
-
 
 
 class Walls(MatrixedObject):
@@ -124,6 +113,14 @@ class Graphics:
         else:
             return current_position
 
+    def get_pixel_coords(self, coords):
+        """Return the pixel coordinates from the matrix indices."""
+        pixel_x = ((coords[0] % self.dungeon.columns) + 1 / 2) * self.dungeon.square_size
+        pixel_y = ((coords[1] % self.dungeon.rows) + 1 / 2) * self.dungeon.square_size
+
+        return pixel_x, pixel_y
+
+
     def display_graphics(self):
         pygame.init()
 
@@ -133,7 +130,23 @@ class Graphics:
         player_rect = player_surf.get_rect()
         player_rect.center = player.coords
 
+        temp_monster = Monster((9, 7), pygame.image.load("template_monster.png").convert_alpha())
+        monster_surf = temp_monster.texture
+
+        monster_rect = monster_surf.get_rect()
+        monster_rect.center = temp_monster.coords
+
+
+        """PUT THIS SOMEWHERE ELSE HERE FOR NOW"""
+        monster_movement = 200
+        monster_move_event = pygame.USEREVENT
+        pygame.time.set_timer(monster_move_event, monster_movement)
+
+        clock = pygame.time.Clock()
+
         while True:
+            clock.tick(40)
+
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN:
                     if event.key in [pygame.K_w, pygame.K_UP]:
@@ -147,6 +160,13 @@ class Graphics:
                     elif event.key == pygame.K_ESCAPE:
                         pygame.quit()
                         exit()
+                elif event.type == monster_move_event:
+                    try:
+                        monster_target_square = temp_monster.get_movement_path(player.coords[::-1], level.level_graph)[1]
+                    except IndexError:
+                        monster_target_square = player.coords[::-1]
+
+                    temp_monster.coords = monster_target_square
 
 
             r_l = (player.coords[0] // self.dungeon.columns) * self.dungeon.columns  # TODO put this in a function
@@ -163,113 +183,29 @@ class Graphics:
             self.walls_right.display(self.dungeon.surf, [r_l, r_u], [c_l, c_u])
             self.walls_left.display(self.dungeon.surf, [r_l, r_u], [c_l, c_u])
 
-            player_centre_x = ((player.coords[0] % self.dungeon.columns) + 1/2) * self.dungeon.square_size
-            player_centre_y = ((player.coords[1] % self.dungeon.rows) + 1/2) * self.dungeon.square_size
-            player_rect.center = (player_centre_x, player_centre_y)
+            # player_centre_x = ((player.coords[0] % self.dungeon.columns) + 1/2) * self.dungeon.square_size
+            # player_centre_y = ((player.coords[1] % self.dungeon.rows) + 1/2) * self.dungeon.square_size
+            player_rect.center = Graphics.get_pixel_coords(self, (player.coords[0], player.coords[1]))
+            #player_rect.center = (player_centre_x, player_centre_y)
             self.dungeon.surf.blit(player_surf, player_rect)
+
+
+            monster_rect.center = Graphics.get_pixel_coords(self, temp_monster.coords[::-1])
+
+
+            if c_l <= temp_monster.coords[0] < c_u-1:  # TODO put this in the monster class maybe or generalise the displaying function
+                if r_l <= temp_monster.coords[1] < r_u-1:  # TODO why have I done it like this???
+                    self.dungeon.surf.blit(monster_surf, monster_rect)
 
             pygame.display.update()
 #
-tiles1 = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                   [0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                   [0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
-                   [0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0],
-                   [0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0],
-                   [0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 0, 0, 1, 0],
-                   [0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 0],
-                   [0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1],
-                   [0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-                   [0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0]])
 
-tiles2 = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                   [1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                   [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                   [0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1],
-                   [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-                   [0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1],
-                   [1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
-                   [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
-                   [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0]])
 
-tiles3 = np.array([[0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0],
-                   [0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 1, 0],
-                   [0, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 0],
-                   [0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 0],
-                   [0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1],
-                   [0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0],
-                   [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0],
-                   [0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0],
-                   [0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0],
-                   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0]])
-
-tiles4 = np.array([[0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
-                   [0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
-                   [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
-                   [0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
-                   [1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0],
-                   [0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1],
-                   [0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0],
-                   [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0],
-                   [0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0],
-                   [0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
-
-tiles5 = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                   [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
-                   [1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 0, 0],
-                   [1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                   [1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                   [0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0],
-                   [0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0],
-                   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0]])
-
-tiles6 = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-                   [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0],
-                   [0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0],
-                   [0, 0, 1, 0, 1, 0, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0],
-                   [0, 1, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0],
-                   [1, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0],
-                   [0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0],
-                   [0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 0],
-                   [0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
-                   [0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0]])
-
-tilesu = np.concatenate((tiles1, tiles2, tiles5), axis=1)
-tilesl = np.concatenate((tiles3, tiles4, tiles6), axis=1)
-
-tiles = np.concatenate((tilesu, tilesl), axis=0)
-
-dungeon = Graphics(tiles, (0, 0))
+dungeon = Graphics(level.level_matrix, (0, 0))
 
 dungeon.display_graphics()
 
 
-def generate_tile_graph(tile_matrix):
-    tile_matrix = np.pad(tile_matrix, pad_width=1)
+tile_graph = level.level_graph
 
-    tile_locations_x, tile_locations_y = np.where(tile_matrix)
-    tile_locations = list(zip(tile_locations_x, tile_locations_y))
-
-    tile_dict = dict(zip(tile_locations, list(range(len(tile_locations)))))
-    tile_dict_reversed = dict(zip(list(range(len(tile_locations))), [(i-1, j-1) for (i, j) in tile_locations]))
-
-    tile_adjacency_mat = np.zeros((len(tile_locations), len(tile_locations)))
-    directions = [np.array([1, 0]), np.array([-1, 0]), np.array([0, 1]), np.array([0, -1])]
-
-    for r, tile in enumerate(tile_locations):
-        for direction in directions:
-            potential_tile = tuple(np.array(tile) + direction)
-            if potential_tile in tile_locations:
-                tile_adjacency_mat[r, tile_dict[potential_tile]] = 1
-
-    graph = nx.from_numpy_array(tile_adjacency_mat)
-    graph = nx.relabel_nodes(graph, tile_dict_reversed)
-
-    return graph
-
-
-tile_graph = generate_tile_graph(tiles)
-
-print(nx.shortest_path(tile_graph, (1, 1), (9, 7)))
+print(nx.shortest_path(tile_graph, (1, 1), (9, 7)))  # TODO only need to update this when the player moves
