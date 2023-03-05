@@ -5,6 +5,8 @@ import numpy as np
 from Level import Level, level
 import networkx as nx
 
+from DungeonGenerator import hi
+
 
 class MatrixedObject:  # TODO inherit from dungeon which has dungeon_surf and grid_spacing
     def __init__(self, matrix, texture_path, grid_spacing, rotation=0):
@@ -134,6 +136,8 @@ class Graphics:
             {(3, 14): {"template": "snail", "hit_points": 40}},
             {(2, 15): {}}]  # TODO fix differences between coordinate systems
 
+        monsters = []  # TODO remove
+
         monster_objects = [Monster(list(monster.keys())[0], **list(monster.values())[0]) for monster in monsters]
 
         for monster in monster_objects:
@@ -197,7 +201,9 @@ class Graphics:
 
 
 
-dungeon = Graphics(level.level_matrix, (0, 0))
+#dungeon = Graphics(level.level_matrix, (0, 0))
+
+dungeon = Graphics(hi.dungeon_matrix, (0, 0))
 
 dungeon.display_graphics()
 
