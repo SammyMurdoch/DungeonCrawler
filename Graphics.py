@@ -56,7 +56,7 @@ class Walls(MatrixedObject):
         else:
             raise AttributeError
 
-        for i in range(len(matrix)):  # Probably should be a function
+        for i in range(len(matrix)):  # TODO Probably should be a function
             if not i % different_wall_freq:  # TODO make this at the sized of the screen not sides of the matrix this solves the problem but leads to exits blocked
                 if not i:
                     matrix[i] = -1 * template_matrix[i]
@@ -103,7 +103,7 @@ class Graphics:
     def move_object(self, current_position, direction):  # TODO is this the right class to put this in? Perhaps have a movable object class which monster, player inherit from
         moved_position = (current_position[0] + direction[0], current_position[1] + direction[1])
 
-        if (moved_position[0] < 0) or (moved_position[0] >= len(self.tiles.matrix[0])):
+        if (moved_position[0] < 0) or (moved_position[0] >= len(self.tiles.matrix[0])):  # TODO change this to in the tile graph? This would allow for teleportation
             return current_position
         elif (moved_position[1] < 0) or (moved_position[1] >= len(self.tiles.matrix)):
             return current_position
@@ -120,7 +120,6 @@ class Graphics:
 
         return pixel_x, pixel_y
 
-
     def display_graphics(self):
         pygame.init()
 
@@ -130,22 +129,21 @@ class Graphics:
         player_rect = player_surf.get_rect()
         player_rect.center = player.coords
 
-        temp_monster = Monster((9, 7), pygame.image.load("template_monster.png").convert_alpha())
-        monster_surf = temp_monster.texture
+        monsters = [
+            {(9, 7): {"template": "zombie", "attack_damage": 20}},
+            {(3, 14): {"template": "snail", "hit_points": 40}},
+            {(2, 15): {}}]  # TODO fix differences between coordinate systems
 
-        monster_rect = monster_surf.get_rect()
-        monster_rect.center = temp_monster.coords
+        monster_objects = [Monster(list(monster.keys())[0], **list(monster.values())[0]) for monster in monsters]
 
-
-        """PUT THIS SOMEWHERE ELSE HERE FOR NOW"""
-        monster_movement = 200
-        monster_move_event = pygame.USEREVENT
-        pygame.time.set_timer(monster_move_event, monster_movement)
+        for monster in monster_objects:
+            print(monster.speed)
+            pygame.time.set_timer(monster.move_event, monster.movement)
 
         clock = pygame.time.Clock()
 
         while True:
-            clock.tick(40)
+            clock.tick(1000)
 
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN:
@@ -160,13 +158,16 @@ class Graphics:
                     elif event.key == pygame.K_ESCAPE:
                         pygame.quit()
                         exit()
-                elif event.type == monster_move_event:
-                    try:
-                        monster_target_square = temp_monster.get_movement_path(player.coords[::-1], level.level_graph)[1]
-                    except IndexError:
-                        monster_target_square = player.coords[::-1]
 
-                    temp_monster.coords = monster_target_square
+                for monster in monster_objects:
+                    if event.type == monster.move_event:
+                        try:
+                            monster_target_square = monster.get_movement_path(player.coords[::-1], level.level_graph)[1]
+                        except IndexError:  # TODO this is dependent in movement not collision
+                            monster_target_square = player.coords[::-1]
+                            exit()
+
+                        monster.coords = monster_target_square
 
 
             r_l = (player.coords[0] // self.dungeon.columns) * self.dungeon.columns  # TODO put this in a function
@@ -183,22 +184,17 @@ class Graphics:
             self.walls_right.display(self.dungeon.surf, [r_l, r_u], [c_l, c_u])
             self.walls_left.display(self.dungeon.surf, [r_l, r_u], [c_l, c_u])
 
-            # player_centre_x = ((player.coords[0] % self.dungeon.columns) + 1/2) * self.dungeon.square_size
-            # player_centre_y = ((player.coords[1] % self.dungeon.rows) + 1/2) * self.dungeon.square_size
             player_rect.center = Graphics.get_pixel_coords(self, (player.coords[0], player.coords[1]))
-            #player_rect.center = (player_centre_x, player_centre_y)
             self.dungeon.surf.blit(player_surf, player_rect)
 
-
-            monster_rect.center = Graphics.get_pixel_coords(self, temp_monster.coords[::-1])
-
-
-            if c_l <= temp_monster.coords[0] < c_u-1:  # TODO put this in the monster class maybe or generalise the displaying function
-                if r_l <= temp_monster.coords[1] < r_u-1:  # TODO why have I done it like this???
-                    self.dungeon.surf.blit(monster_surf, monster_rect)
+            for monster in monster_objects:
+                monster.rect.center = Graphics.get_pixel_coords(self, monster.coords[::-1])
+                if c_l <= monster.coords[0] < c_u-1:  # TODO put this in the monster class maybe or generalise the displaying function
+                    if r_l <= monster.coords[1] < r_u-1:  # TODO why have I done it like this???
+                        self.dungeon.surf.blit(monster.surf, monster.rect)
 
             pygame.display.update()
-#
+
 
 
 dungeon = Graphics(level.level_matrix, (0, 0))
@@ -207,5 +203,3 @@ dungeon.display_graphics()
 
 
 tile_graph = level.level_graph
-
-print(nx.shortest_path(tile_graph, (1, 1), (9, 7)))  # TODO only need to update this when the player moves

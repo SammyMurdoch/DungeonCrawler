@@ -18,3 +18,14 @@ Want a function that helps build an item/monster
 in item __init__ method it uses this function
 
 You will input a template and/or values to create either
+
+For rooms with monsters in use a genetic algorithm to determine monster strength. Simulate fights between players and monsters
+
+
+Collectible pets that are either from a database or randommly generated. The random ones are then added to the database. Other players can see your pets.
+
+Use a graph to create zones with different properties e.g. difficulty, healing ect. Use spacial partitioning to make rooms. Perhaps cellular
+automator to change rooms slightly.
+
+Could insert pre-designed elements into the dungeon in the place of certain sized partitions or within generated rooms.
+Certain areas could have more or less pre-designed elemements or cellular automator changed depending on the level of ruin or naturality

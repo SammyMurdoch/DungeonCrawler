@@ -1,7 +1,6 @@
-﻿name/str,hit_points/int,attack_damage/int
-template,0,0
-zombie,10,2
-snail,1000,1000
-zombie rabbit,1,1
-zombie llama,100,1000
-unicorn snail,10000,100000
+﻿name/str,hit_points/int,attack_damage/int,speed/int,texture/str
+template,0,0,500,template_monster.png
+zombie,10,2,500,zombie_2.png
+snail,1000,1000,500,template_monster.png
+zombie rabbit,1,1,0
+zombie llama,100,1000,0

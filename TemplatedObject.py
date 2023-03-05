@@ -15,9 +15,9 @@ class TemplatedObject:
                 raise ValueError(f'Missing attribute: {attr}')
 
             if attr in attribute_dict:
-                setattr(TemplatedObject, attr, attribute_dict[attr])
+                setattr(self, attr, attribute_dict[attr])
             else:
-                setattr(TemplatedObject, attr, template_dict[attr])
+                setattr(self, attr, template_dict[attr])
 
     def __str__(self) -> str:  # TODO this is from tile, incorporate tile into this
         displayed_string = ""
