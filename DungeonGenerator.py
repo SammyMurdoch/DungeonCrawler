@@ -1,5 +1,6 @@
 import numpy as np
 from random import randint
+import copy
 
 class PartitionTree:
     def __init__(self, root):
@@ -67,11 +68,12 @@ class Dungeon:
         self.dungeon_tree = PartitionTree(bounds)
 
         while not self.dungeon_tree.is_complete:
-            for partition in self.dungeon_tree.active_end_nodes:
+            for partition in self.dungeon_tree.active_end_nodes.copy():
                 Dungeon.partition_partition(self, partition)
 
-            for leaf in self.dungeon.tree:
+            for leaf in self.dungeon_tree.nodes:
                 print(leaf)
+            print("\n")
 
     def partition_partition(self, partition):
         if self.dungeon_tree.nodes[partition].x_len < 5:
@@ -85,8 +87,6 @@ class Dungeon:
         initial_bounds = self.dungeon_tree.nodes[partition].bounds
         l_b = initial_bounds[0][direction] + 2
         u_b = initial_bounds[1][direction] - 2
-
-        print(l_b, u_b)
 
         split_point = randint(l_b, u_b)
 
