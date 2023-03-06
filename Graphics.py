@@ -203,7 +203,7 @@ class Graphics:
 
 #dungeon = Graphics(level.level_matrix, (0, 0))
 
-dungeon = Graphics(hi.dungeon_matrix, (0, 0))
+dungeon = Graphics(hi.dungeon_matrix, np.nonzero(hi.dungeon_matrix)[0][::-1])  # TODO player placement fails
 
 dungeon.display_graphics()
 

@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 import math
 
 np.set_printoptions(threshold=np.inf)
+
+
 class PartitionTree:
     def __init__(self, root):
         root_id = 0
@@ -75,15 +77,23 @@ class Dungeon:
                 Dungeon.partition_partition(self, partition)
 
         for zone in self.dungeon_tree.end_nodes:
+            print(f'Zone: {self.dungeon_tree.nodes[zone].bounds}')
             zone_object = self.dungeon_tree.nodes[zone]
 
             length = randint(2, self.dungeon_tree.nodes[zone].x_len)
             height = randint(2, self.dungeon_tree.nodes[zone].y_len)
 
-            b_l_x = randint(zone_object.bounds[0][0], zone_object.bounds[1][0] - length)
-            b_l_y = randint(zone_object.bounds[0][1], zone_object.bounds[1][1] - height)
 
-            zone_object.room = [(b_l_x, b_l_y), (b_l_x+length, b_l_y+height)]
+
+            # b_l_x = randint(zone_object.bounds[0][0], zone_object.bounds[1][0] - length)
+            # b_l_y = randint(zone_object.bounds[0][1], zone_object.bounds[1][1] - height)
+
+            b_l_x = zone_object.bounds[0][0]
+            b_l_y = zone_object.bounds[0][1]
+
+
+
+            zone_object.room = [(b_l_x, b_l_y), (b_l_x+length-1, b_l_y+height-1)]
 
         self.dungeon_matrix = np.zeros((bounds[1][1], bounds[1][0]))
 
@@ -96,6 +106,8 @@ class Dungeon:
             print(zone_object.room)
 
         print(self.dungeon_matrix)
+
+        print()
 
 
 
@@ -112,6 +124,9 @@ class Dungeon:
         if x_len >= 5 and y_len >= 5:
             if Dungeon.random_split((x_len, y_len)):
                 Dungeon.split(self, randint(0, 1), partition)
+
+            else:
+                self.dungeon_tree.active_end_nodes.remove(partition)
 
     @staticmethod
     def random_split(dim, min_a=4, max_a=100):  # TODO if outside of the bounds, return no split, might need to change the other bit that decides on the split
