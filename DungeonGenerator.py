@@ -1,6 +1,7 @@
 import numpy as np
 from random import randint, random
 import matplotlib.pyplot as plt
+from matplotlib import colors
 import math
 
 np.set_printoptions(threshold=np.inf)
@@ -80,8 +81,11 @@ class Dungeon:
             print(f'Zone: {self.dungeon_tree.nodes[zone].bounds}')
             zone_object = self.dungeon_tree.nodes[zone]
 
-            length = randint(2, self.dungeon_tree.nodes[zone].x_len)
-            height = randint(2, self.dungeon_tree.nodes[zone].y_len)
+            # length = randint(2, self.dungeon_tree.nodes[zone].x_len)
+            # height = randint(2, self.dungeon_tree.nodes[zone].y_len)
+
+            length = self.dungeon_tree.nodes[zone].x_len
+            height = self.dungeon_tree.nodes[zone].y_len
 
 
 
@@ -93,22 +97,47 @@ class Dungeon:
 
 
 
-            zone_object.room = [(b_l_x, b_l_y), (b_l_x+length-1, b_l_y+height-1)]
+            # zone_object.room = [(b_l_x, b_l_y), (b_l_x+length-1, b_l_y+height-1)] # TODO put back?
+            zone_object.room = [(b_l_x, b_l_y), (b_l_x+length, b_l_y+height)]
+
 
         self.dungeon_matrix = np.zeros((bounds[1][1], bounds[1][0]))
+
+        # TODO either delete this or put it in a better place
+        colour_mat = np.zeros((bounds[1][1], bounds[1][0]))
+        colour_values = np.linspace(0, 270, len(self.dungeon_tree.end_nodes)+2)
+
+        new_colour_values = np.empty((len(colour_values), 3))
+
+        for i, colour in enumerate(colour_values):
+            new_colour_values[i] = [colour/360, 0.5, 0.5]
+
+        for i, row in enumerate(new_colour_values):
+            new_colour_values[i] = colors.hsv_to_rgb(tuple(row))
+
+        print(f'Colour Values:\n {new_colour_values}')
+
+        c_map = colors.ListedColormap(new_colour_values)
+        ###
+
 
         for zone in self.dungeon_tree.end_nodes:
             zone_object = self.dungeon_tree.nodes[zone]  # TODO this should just be an attribute
             r = zone_object.room
 
             self.dungeon_matrix[r[0][1]: r[1][1] + 1, r[0][0]: r[1][0] + 1] = 1 # Flipped due to matrix geometry
+            colour_mat[r[0][1]: r[1][1] + 1, r[0][0]: r[1][0] + 1] = zone
 
-            print(zone_object.room)
+            print(zone_object.room, "hi")
 
         print(self.dungeon_matrix)
 
         print()
 
+        print(colour_mat)
+
+        plt.imshow(colour_mat, cmap=c_map)
+        plt.show()
 
 
     def partition_partition(self, partition):
@@ -157,4 +186,5 @@ class Dungeon:
         self.dungeon_tree.add_node(sub_par_1_b, partition)
         self.dungeon_tree.add_node(sub_par_2_b, partition)
 
-hi = Dungeon(([0, 0], [16, 10]))
+hi = Dungeon(([0, 0], [64, 48]))
+
