@@ -85,15 +85,18 @@ class Dungeon:
 
             zone_object.room = [(b_l_x, b_l_y), (b_l_x+length, b_l_y+height)]
 
-        self.dungeon_matrix = np.zeros((bounds[1][0], bounds[1][1]))
+        self.dungeon_matrix = np.zeros((bounds[1][1], bounds[1][0]))
 
         for zone in self.dungeon_tree.end_nodes:
             zone_object = self.dungeon_tree.nodes[zone]  # TODO this should just be an attribute
             r = zone_object.room
 
-            self.dungeon_matrix[r[0][0]: r[1][0], r[0][1] + 1: r[1][1] + 1] = 1
+            self.dungeon_matrix[r[0][1]: r[1][1] + 1, r[0][0]: r[1][0] + 1] = 1 # Flipped due to matrix geometry
+
+            print(zone_object.room)
 
         print(self.dungeon_matrix)
+
 
 
     def partition_partition(self, partition):
@@ -106,7 +109,7 @@ class Dungeon:
         # else:
         #     Dungeon.split(self, randint(0, 1), partition)
 
-        if x_len >= 5 and y_len >=5:
+        if x_len >= 5 and y_len >= 5:
             if Dungeon.random_split((x_len, y_len)):
                 Dungeon.split(self, randint(0, 1), partition)
 
@@ -139,4 +142,4 @@ class Dungeon:
         self.dungeon_tree.add_node(sub_par_1_b, partition)
         self.dungeon_tree.add_node(sub_par_2_b, partition)
 
-hi = Dungeon(([0, 0], [10, 16]))
+hi = Dungeon(([0, 0], [16, 10]))
