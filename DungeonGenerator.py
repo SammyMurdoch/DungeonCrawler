@@ -6,8 +6,47 @@ import math
 
 np.set_printoptions(threshold=np.inf)
 
+class TreeNode:
+    def __init__(self, parent, value=None, children=None):
+        self.parent = parent
+        self.value = value
+        self.children = children
 
-class PartitionTree:
+    def add_child(self, child):
+        if self.children is None:
+            self.children = {child}
+        else:
+            self.children.add(child)
+
+
+class Tree:
+    def __init__(self):
+        self.nodes = {}
+        self.root = None
+
+    def add_node(self, node: TreeNode):
+        if node.parent is None:
+            if self.root is None:
+                self.root = node.value
+                self.nodes[0] = node
+            else:
+                raise ValueError("Node must have a parent to add it to the tree.")
+        else:
+            if node.parent in self.nodes:
+                self.nodes[len(self)] = node
+                self.nodes[node.parent].add_child(len(self))
+            else:
+                raise ValueError("Parent not in the tree.")
+
+    def __len__(self):
+        return len(self.nodes)
+
+
+
+
+
+
+class PartitionTree(Tree):
     def __init__(self, root):
         root_id = 0
         self.nodes = {root_id: PartitionNode(root, None)}
@@ -153,7 +192,6 @@ class Dungeon:
         if x_len >= 5 and y_len >= 5:
             if Dungeon.random_split((x_len, y_len)):
                 Dungeon.split(self, randint(0, 1), partition)
-
             else:
                 self.dungeon_tree.active_end_nodes.remove(partition)
 
@@ -186,5 +224,5 @@ class Dungeon:
         self.dungeon_tree.add_node(sub_par_1_b, partition)
         self.dungeon_tree.add_node(sub_par_2_b, partition)
 
-hi = Dungeon(([0, 0], [64, 48]))
+hi = Dungeon(([0, 0], [20, 20]))
 
