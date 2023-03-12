@@ -100,8 +100,8 @@ class PartitionNode(TreeNode):
         self.bounds = bounds
         self.room = room
 
-    def __str__(self):
-        return f'Bounds: {self.bounds}, {super().__str__()}'
+    def __str__(self): # TODO change to print out all attributes in a certain list
+        return f'Bounds: {self.bounds}, Room: {self.room}, {super().__str__()}'
 
     @property
     def x_len(self):
@@ -120,14 +120,15 @@ class PartitionNode(TreeNode):
 
 
 tree = PartitionTree()
-tree.add_node(PartitionNode(None)) # 0
-tree.add_node(PartitionNode(None, 0)) # 1
+tree.add_node(PartitionNode(None))
+tree.add_node(PartitionNode(None, 0))
 tree.add_node(PartitionNode(None, 0))
 tree.add_node(PartitionNode(None, 1))
 tree.add_node(PartitionNode(None, 3))
 tree.add_node(PartitionNode(None, 4))
 
 print(tree)
+print("\n")
 
 
 # class PartitionTree(Tree):
