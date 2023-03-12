@@ -63,7 +63,8 @@ class PartitionTree(Tree):
 
         for node in self.nodes:
             s += f'Index: {node}, {str(self.nodes[node])}\n'
-        s = s[:-1]
+
+        s += f'\nEnd Nodes: {self.end_nodes}\nActive End Nodes: {self.active_end_nodes}'
 
         return s
 
@@ -119,11 +120,12 @@ class PartitionNode(TreeNode):
 
 
 tree = PartitionTree()
-tree.add_node(PartitionNode(None))
-tree.add_node(PartitionNode(None, 0))
+tree.add_node(PartitionNode(None)) # 0
+tree.add_node(PartitionNode(None, 0)) # 1
 tree.add_node(PartitionNode(None, 0))
 tree.add_node(PartitionNode(None, 1))
 tree.add_node(PartitionNode(None, 3))
+tree.add_node(PartitionNode(None, 4))
 
 print(tree)
 
