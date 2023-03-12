@@ -9,17 +9,17 @@ np.set_printoptions(threshold=np.inf)
 class TreeNode:
     def __init__(self, parent=None, children=None):
         self.index = None
-        self.parent = parent
-        self.children = children
+        self.parent_index = parent
+        self.children_indices = children
 
     def __str__(self):
-        return f'Index: {self.index}\nParent: {self.parent}\nChildren: {self.children}'
+        return f'Index: {self.index}\nParent: {self.parent_index}\nChildren: {self.children_indices}'
 
     def add_child(self, child):
-        if self.children is None:
-            self.children = {child}
+        if self.children_indices is None:
+            self.children_indices = {child}
         else:
-            self.children.add(child)
+            self.children_indices.add(child)
 
 
 class Tree:
@@ -27,20 +27,20 @@ class Tree:
         self.nodes = {}
         self.root = None
 
-    def add_node(self, node: TreeNode):
-        node.index = len(self)
+    def add_node(self, tree_node: TreeNode):
+        tree_node.index = len(self)
 
-        if node.parent is None:
+        if tree_node.parent_index is None:
             if self.root is None:
-                self.nodes[node.index] = node
-                self.root = node.index
+                self.nodes[tree_node.index] = tree_node
+                self.root = tree_node.index
 
             else:
                 raise ValueError("Node must have a parent to add it to the tree.")
         else:
-            if node.parent in self.nodes:
-                self.nodes[node.index] = node
-                self.nodes[node.parent].add_child(node.index)
+            if tree_node.parent_index in self.nodes:
+                self.nodes[tree_node.index] = tree_node
+                self.nodes[tree_node.parent_index].add_child(tree_node.index)
             else:
                 raise ValueError("Parent not in the tree.")
 
@@ -58,18 +58,19 @@ class PartitionTree(Tree):
         self.end_nodes = None
         self.active_end_nodes = None
 
-    def add_node(self, node: TreeNode):
-        super().add_node(node)
+    def add_node(self, partition_node: TreeNode):
+        super().add_node(partition_node)
 
         if self.end_nodes is None:
-            self.end_nodes = {node.index}
-            self.active_end_nodes = {node.index}
+            self.end_nodes = {partition_node.index}
+            self.active_end_nodes = {partition_node.index}
         else:
-            self.end_nodes.add(node)
-            self.active_end_nodes.add(node.index)
+            self.end_nodes.add(partition_node.index)
+            self.active_end_nodes.add(partition_node.index)
 
-            self.end_nodes.remove(node.parent.index)
-            self.active_end_nodes.remove(node.parent.index)
+            if partition_node.parent_index in self.end_nodes:
+                self.end_nodes.remove(partition_node.parent_index)
+                self.active_end_nodes.remove(partition_node.parent_index)
 
     @property
     def is_complete(self):
@@ -90,7 +91,7 @@ class PartitionNode(TreeNode):
         self.room = room
 
     def __str__(self):
-        return f'Bounds: {self.bounds}\nParent: {self.parent}\nChildren: {self.children}\n'
+        return f'Bounds: {self.bounds}\nParent: {self.parent_index}\nChildren: {self.children_indices}\n'
 
     @property
     def x_len(self):
@@ -110,7 +111,15 @@ class PartitionNode(TreeNode):
 
 tree = PartitionTree()
 tree.add_node(PartitionNode(None))
-tree.add_node(PartitionNode(None, ))
+tree.add_node(PartitionNode(None, 0))
+tree.add_node(PartitionNode(None, 0))
+tree.add_node(PartitionNode(None, 1))
+
+print(len(tree))
+print(tree.is_complete)
+
+print(tree.end_nodes)
+print(tree.active_end_nodes)
 
 for node in tree.nodes.values():
     print(node)
