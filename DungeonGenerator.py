@@ -13,7 +13,7 @@ class TreeNode:
         self.children_indices = children
 
     def __str__(self):
-        return f'Index: {self.index}\nParent: {self.parent_index}\nChildren: {self.children_indices}'
+        return f'Parent: {self.parent_index}, Children: {self.children_indices}'
 
     def add_child(self, child):
         if self.children_indices is None:
@@ -58,19 +58,28 @@ class PartitionTree(Tree):
         self.end_nodes = None
         self.active_end_nodes = None
 
-    def add_node(self, partition_node: TreeNode):
-        super().add_node(partition_node)
+    def __str__(self):
+        s = ""
+
+        for node in self.nodes:
+            s += f'Index: {node}, {str(self.nodes[node])}\n'
+        s = s[:-1]
+
+        return s
+
+    def add_node(self, node: TreeNode):
+        super().add_node(node)
 
         if self.end_nodes is None:
-            self.end_nodes = {partition_node.index}
-            self.active_end_nodes = {partition_node.index}
+            self.end_nodes = {node.index}
+            self.active_end_nodes = {node.index}
         else:
-            self.end_nodes.add(partition_node.index)
-            self.active_end_nodes.add(partition_node.index)
+            self.end_nodes.add(node.index)
+            self.active_end_nodes.add(node.index)
 
-            if partition_node.parent_index in self.end_nodes:
-                self.end_nodes.remove(partition_node.parent_index)
-                self.active_end_nodes.remove(partition_node.parent_index)
+            if node.parent_index in self.end_nodes:
+                self.end_nodes.remove(node.parent_index)
+                self.active_end_nodes.remove(node.parent_index)
 
     @property
     def is_complete(self):
@@ -91,7 +100,7 @@ class PartitionNode(TreeNode):
         self.room = room
 
     def __str__(self):
-        return f'Bounds: {self.bounds}\nParent: {self.parent_index}\nChildren: {self.children_indices}\n'
+        return f'Bounds: {self.bounds}, {super().__str__()}'
 
     @property
     def x_len(self):
@@ -114,16 +123,9 @@ tree.add_node(PartitionNode(None))
 tree.add_node(PartitionNode(None, 0))
 tree.add_node(PartitionNode(None, 0))
 tree.add_node(PartitionNode(None, 1))
+tree.add_node(PartitionNode(None, 3))
 
-print(len(tree))
-print(tree.is_complete)
-
-print(tree.end_nodes)
-print(tree.active_end_nodes)
-
-for node in tree.nodes.values():
-    print(node)
-
+print(tree)
 
 
 # class PartitionTree(Tree):
