@@ -230,7 +230,9 @@ class Dungeon:
 
         if partition.x_len >= 10 and partition.y_len >= 10:
             if Dungeon.random_split([partition.x_len, partition.y_len]):
-                split_axis_pdf = lambda x: (1/math.pi) * (math.atan(x) + math.pi/2)
+                #split_axis_pdf = lambda x: (1/math.pi) * (math.atan(x) + math.pi/2)
+                split_axis_pdf = lambda x: 1/2 * (math.tanh(x) + 1)
+
                 split_axis = SampleContinuousDistribution.bernoulli_sample(split_axis_pdf,
                                                                            math.log(partition.x_len/partition.y_len))
 
@@ -241,7 +243,7 @@ class Dungeon:
             self.dungeon_tree.active_end_nodes.remove(partition.index)
 
     @staticmethod
-    def random_split(dim: list, min_a: int=4, max_a: int=400) -> bool:  # TODO if outside of the bounds, return no split, might need to change the other bit that decides on the split
+    def random_split(dim: list, min_a: int=4, max_a: int=400) -> int:  # TODO if outside of the bounds, return no split, might need to change the other bit that decides on the split
         pdf = lambda x: (x-min_a)/(max_a-min_a)
 
         return SampleContinuousDistribution.bernoulli_sample(pdf, math.prod(dim))
@@ -255,7 +257,6 @@ class Dungeon:
         d = u_b - l_b
         split_point_cdf = lambda x: (d*math.sin(4*math.pi*x/d) - 8*d*math.sin(2*math.pi*x/d) + 12*math.pi*x)/\
                                            (12*math.pi*d)
-
         split_point = round(SampleContinuousDistribution.single_sample(split_point_cdf, (u_b + l_b) / 2) + l_b)
 
         sub_par_1_b = [initial_bounds[0], [None, None]]
