@@ -3,9 +3,9 @@ from random import randint, random
 import matplotlib.pyplot as plt
 from matplotlib import colors
 import math
+from scipy.optimize import fsolve
 
 np.set_printoptions(threshold=np.inf)
-
 
 class TreeNode:
     def __init__(self, parent: int=None, children: list[int]=None) -> None:
@@ -127,7 +127,7 @@ class PartitionNode(TreeNode):
 
 
 class Dungeon:
-    def __init__(self, bounds: list[list[int]]):
+    def __init__(self, bounds: list[list[int]]) -> None:
         self.dungeon_tree = PartitionTree(PartitionNode(bounds))
 
         while not self.dungeon_tree.is_complete:
@@ -195,8 +195,7 @@ class Dungeon:
         plt.imshow(colour_mat, cmap=c_map)
         plt.show()
 
-
-    def partition_partition(self, partition: PartitionNode):
+    def partition_partition(self, partition: PartitionNode) -> None:
         # if self.dungeon_tree.nodes[partition].x_len < 5: maybe put this back and make splitting based on a probability distribution
         #     Dungeon.split(self, 1, partition)
         # elif self.dungeon_tree.nodes[partition].y_len < 5:
@@ -204,8 +203,8 @@ class Dungeon:
         # else:
         #     Dungeon.split(self, randint(0, 1), partition)
 
-        if partition.x_len >= 5 and partition.y_len >= 5:
-            if Dungeon.random_split((partition.x_len, partition.y_len)):
+        if partition.x_len >= 10 and partition.y_len >= 10:
+            if Dungeon.random_split([partition.x_len, partition.y_len]):
                 Dungeon.split_partition(self, randint(0, 1), partition)
             else:
                 self.dungeon_tree.active_end_nodes.remove(partition.index)
@@ -213,7 +212,7 @@ class Dungeon:
             self.dungeon_tree.active_end_nodes.remove(partition.index)
 
     @staticmethod
-    def random_split(dim: list, min_a: int=4, max_a: int=400):  # TODO if outside of the bounds, return no split, might need to change the other bit that decides on the split
+    def random_split(dim: list, min_a: int=4, max_a: int=400) -> bool:  # TODO if outside of the bounds, return no split, might need to change the other bit that decides on the split
         p_f = lambda x: (x-min_a)/(max_a-min_a)
         probability = p_f(math.prod(dim))
 
@@ -222,12 +221,20 @@ class Dungeon:
 
         return False
 
-    def split_partition(self, direction: int, partition: PartitionNode):
+    def split_partition(self, direction: int, partition: PartitionNode) -> None:
         initial_bounds = partition.bounds
         l_b = initial_bounds[0][direction] + 2
         u_b = initial_bounds[1][direction] - 2
 
-        split_point = randint(l_b, u_b)
+        #split_point = randint(l_b, u_b)
+
+        d = u_b - l_b
+        split_point_cdf = lambda x: (d*math.sin(4*math.pi*x/d) - 8*d*math.sin(2*math.pi*x/d) + 12*math.pi*x)/\
+                                           (12*math.pi*d)
+
+        split_point = round(Dungeon.sample_distribution(split_point_cdf, 1, (u_b+l_b)/2)[0] + l_b)
+
+
 
         sub_par_1_b = [initial_bounds[0], [None, None]]
         sub_par_2_b = [[None, None], initial_bounds[1]]
@@ -241,6 +248,16 @@ class Dungeon:
         self.dungeon_tree.add_node(PartitionNode(sub_par_1_b, partition.index))
         self.dungeon_tree.add_node(PartitionNode(sub_par_2_b, partition.index))
 
+    @staticmethod
+    def sample_distribution(cdf: callable, n: int, x0: float) -> list:
+        samples = []
 
-hi = Dungeon(([0, 0], [100, 100]))
+        for i in range(n):
+            r = random()
+            samples.append((fsolve(lambda x: cdf(x) - r, np.array([x0]))[0]))
+
+        return samples
+
+
+hi = Dungeon([[0, 0], [100, 100]])
 
