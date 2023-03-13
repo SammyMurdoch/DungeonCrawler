@@ -22,9 +22,16 @@ class SampleContinuousDistribution:
     def single_sample(cdf: callable, x0: float) -> float:
         return SampleContinuousDistribution.generate_sample(cdf, 1, x0)[0]
 
+    @staticmethod
+    def bernoulli_sample(pdf: callable, x: float) -> int:
+        if random() < pdf(x):
+            return True
+
+        return False
+
 
 class TreeNode:
-    def __init__(self, parent: int=None, children: list[int]=None) -> None:
+    def __init__(self, parent: int=None, children: set[int]=None) -> None:
         self.index = None
         self.parent_index = parent
         self.children_indices = children
@@ -221,7 +228,11 @@ class Dungeon:
 
         if partition.x_len >= 10 and partition.y_len >= 10:
             if Dungeon.random_split([partition.x_len, partition.y_len]):
-                Dungeon.split_partition(self, randint(0, 1), partition)
+                split_axis_pdf = lambda x: (1/math.pi) * (math.atan(x) + math.pi/2)
+                split_axis = SampleContinuousDistribution.bernoulli_sample(split_axis_pdf,
+                                                                           math.log(partition.x_len/partition.y_len))
+
+                Dungeon.split_partition(self, split_axis, partition)
             else:
                 self.dungeon_tree.active_end_nodes.remove(partition.index)
         else:
@@ -262,5 +273,5 @@ class Dungeon:
         self.dungeon_tree.add_node(PartitionNode(sub_par_2_b, partition.index))
 
 
-hi = Dungeon([[0, 0], [24, 16]])
+hi = Dungeon([[0, 0], [100, 100]])
 
