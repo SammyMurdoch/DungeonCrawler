@@ -24,10 +24,12 @@ class SampleContinuousDistribution:
 
     @staticmethod
     def bernoulli_sample(pdf: callable, x: float) -> int:
-        if random() < pdf(x):
-            return True
+        r = random()
 
-        return False
+        if r < pdf(x):
+            return 1
+
+        return 0
 
 
 class TreeNode:
@@ -232,7 +234,7 @@ class Dungeon:
                 split_axis = SampleContinuousDistribution.bernoulli_sample(split_axis_pdf,
                                                                            math.log(partition.x_len/partition.y_len))
 
-                Dungeon.split_partition(self, split_axis, partition)
+                Dungeon.split_partition(self, (split_axis + 1) % 2, partition)
             else:
                 self.dungeon_tree.active_end_nodes.remove(partition.index)
         else:
@@ -240,14 +242,10 @@ class Dungeon:
 
     @staticmethod
     def random_split(dim: list, min_a: int=4, max_a: int=400) -> bool:  # TODO if outside of the bounds, return no split, might need to change the other bit that decides on the split
-        cdf = lambda x: (x-min_a)/(max_a-min_a)
+        pdf = lambda x: (x-min_a)/(max_a-min_a)
 
-        probability = cdf(math.prod(dim)) # TODO put this into the new probability functions
+        return SampleContinuousDistribution.bernoulli_sample(pdf, math.prod(dim))
 
-        if random() <= probability:
-            return True
-
-        return False
 
     def split_partition(self, direction: int, partition: PartitionNode) -> None:
         initial_bounds = partition.bounds
