@@ -7,6 +7,22 @@ from scipy.optimize import fsolve
 
 np.set_printoptions(threshold=np.inf)
 
+class SampleContinuousDistribution:
+    @staticmethod
+    def generate_sample(cdf: callable, n: int, x0: float) -> list:
+        samples = []
+
+        for i in range(n):
+            r = random()
+            samples.append((fsolve(lambda x: cdf(x) - r, np.array([x0]))[0]))
+
+        return samples
+
+    @staticmethod
+    def single_sample(cdf: callable, x0: float) -> float:
+        return SampleContinuousDistribution.generate_sample(cdf, 1, x0)[0]
+
+
 class TreeNode:
     def __init__(self, parent: int=None, children: list[int]=None) -> None:
         self.index = None
@@ -213,8 +229,9 @@ class Dungeon:
 
     @staticmethod
     def random_split(dim: list, min_a: int=4, max_a: int=400) -> bool:  # TODO if outside of the bounds, return no split, might need to change the other bit that decides on the split
-        p_f = lambda x: (x-min_a)/(max_a-min_a)
-        probability = p_f(math.prod(dim))
+        cdf = lambda x: (x-min_a)/(max_a-min_a)
+
+        probability = cdf(math.prod(dim)) # TODO put this into the new probability functions
 
         if random() <= probability:
             return True
@@ -226,15 +243,11 @@ class Dungeon:
         l_b = initial_bounds[0][direction] + 2
         u_b = initial_bounds[1][direction] - 2
 
-        #split_point = randint(l_b, u_b)
-
         d = u_b - l_b
         split_point_cdf = lambda x: (d*math.sin(4*math.pi*x/d) - 8*d*math.sin(2*math.pi*x/d) + 12*math.pi*x)/\
                                            (12*math.pi*d)
 
-        split_point = round(Dungeon.sample_distribution(split_point_cdf, 1, (u_b+l_b)/2)[0] + l_b)
-
-
+        split_point = round(SampleContinuousDistribution.single_sample(split_point_cdf, (u_b + l_b) / 2) + l_b)
 
         sub_par_1_b = [initial_bounds[0], [None, None]]
         sub_par_2_b = [[None, None], initial_bounds[1]]
@@ -248,16 +261,6 @@ class Dungeon:
         self.dungeon_tree.add_node(PartitionNode(sub_par_1_b, partition.index))
         self.dungeon_tree.add_node(PartitionNode(sub_par_2_b, partition.index))
 
-    @staticmethod
-    def sample_distribution(cdf: callable, n: int, x0: float) -> list:
-        samples = []
 
-        for i in range(n):
-            r = random()
-            samples.append((fsolve(lambda x: cdf(x) - r, np.array([x0]))[0]))
-
-        return samples
-
-
-hi = Dungeon([[0, 0], [100, 100]])
+hi = Dungeon([[0, 0], [24, 16]])
 
