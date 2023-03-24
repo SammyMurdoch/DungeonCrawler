@@ -7,6 +7,7 @@ from scipy.optimize import fsolve
 
 np.set_printoptions(threshold=np.inf)
 
+
 class SampleContinuousDistribution:
     @staticmethod
     def generate_sample(cdf: callable, n: int, x0: float) -> list:
@@ -144,22 +145,23 @@ class PartitionNode(TreeNode):
         return abs(self.bounds[1][1] - self.bounds[0][1])
 
     @property
+    def area(self) -> float:
+        return self.x_len * self.y_len
+
+    @property
     def is_indivisible(self) -> bool:
         if (self.x_len < 5) or (self.y_len < 5):
             return True
         else:
             return False
 
+# class EndPartitionNode(PartitionNode):
+
+
 
 class Dungeon:
     def __init__(self, bounds: list[list[int]]) -> None:
-        self.dungeon_tree = PartitionTree(PartitionNode(bounds))
-
-        while not self.dungeon_tree.is_complete:
-            for partition in self.dungeon_tree.active_end_nodes.copy():
-                Dungeon.partition_partition(self, self.dungeon_tree.nodes[partition])
-
-        print(self.dungeon_tree)
+        self.dungeon_tree = Dungeon.generate_dungeon_tree(self, bounds)
 
         for zone in self.dungeon_tree.end_nodes:
             zone_object = self.dungeon_tree.nodes[zone]
@@ -220,6 +222,16 @@ class Dungeon:
         plt.imshow(colour_mat, cmap=c_map)
         plt.show()
 
+    def generate_dungeon_tree(self, bounds):
+        dungeon_tree = PartitionTree(PartitionNode(bounds))
+
+        while not dungeon_tree.is_complete:
+            for partition in dungeon_tree.active_end_nodes.copy():
+                Dungeon.partition_partition(self, dungeon_tree.nodes[partition])
+
+        return dungeon_tree
+
+
     def partition_partition(self, partition: PartitionNode) -> None:
         # if self.dungeon_tree.nodes[partition].x_len < 5: maybe put this back and make splitting based on a probability distribution
         #     Dungeon.split(self, 1, partition)
@@ -228,10 +240,12 @@ class Dungeon:
         # else:
         #     Dungeon.split(self, randint(0, 1), partition)
 
-        if partition.x_len >= 10 and partition.y_len >= 10:
+        if partition.x_len >= 10 or partition.y_len >= 10: # TODO and or or?
             if Dungeon.random_split([partition.x_len, partition.y_len]):
                 #split_axis_pdf = lambda x: (1/math.pi) * (math.atan(x) + math.pi/2)
                 split_axis_pdf = lambda x: 1/2 * (math.tanh(x) + 1)
+
+                print("owegowegw", math.log(partition.x_len/partition.y_len), [partition.x_len, partition.y_len])
 
                 split_axis = SampleContinuousDistribution.bernoulli_sample(split_axis_pdf,
                                                                            math.log(partition.x_len/partition.y_len))
@@ -255,6 +269,9 @@ class Dungeon:
         u_b = initial_bounds[1][direction] - 2
 
         d = u_b - l_b
+
+        print(u_b, l_b) # sometimes is 0??!
+
         split_point_cdf = lambda x: (d*math.sin(4*math.pi*x/d) - 8*d*math.sin(2*math.pi*x/d) + 12*math.pi*x)/\
                                            (12*math.pi*d)
         split_point = round(SampleContinuousDistribution.single_sample(split_point_cdf, (u_b + l_b) / 2) + l_b)
@@ -270,6 +287,20 @@ class Dungeon:
 
         self.dungeon_tree.add_node(PartitionNode(sub_par_1_b, partition.index))
         self.dungeon_tree.add_node(PartitionNode(sub_par_2_b, partition.index))
+
+
+class DungeonAnalysis:
+    def __init__(self, sim_count) -> None:
+        self.count = sim_count
+        self.dungeon_simulations = [Dungeon([[0, 0], [100, 100]]) for i in range(self.count)]
+
+    def graph_zone_distribution(self):
+        return NotImplementedError
+
+    def generate_dungeon_data(self):
+        self.mean_zone_area = sum([dungeon.area for dungeon in self.dungeon_simulations])/self.count
+        return NotImplementedError
+
 
 
 hi = Dungeon([[0, 0], [100, 100]])

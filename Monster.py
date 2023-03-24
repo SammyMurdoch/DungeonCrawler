@@ -9,6 +9,7 @@ class Monster(TemplatedObject):
     default_items = GameData.csv_to_dict_keys_unique_column(path, 0)
 
     def __init__(self, location, template='template', **kwargs):
+        print("wkegnkwebgkwbegbkwebg", kwargs)
         super().__init__(self, template, Monster.default_items, kwargs)
         self.coords = location
 
