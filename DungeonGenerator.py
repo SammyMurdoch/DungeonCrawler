@@ -180,7 +180,7 @@ class Dungeon:
 
         return self.dungeon_tree
 
-    def generate_dungeon_matrix(self):
+    def generate_dungeon_matrix(self) -> np.ndarray:
         dungeon_matrix = np.zeros((self.bounds[1][1], self.bounds[1][0]))
 
         for i, zone in enumerate(self.zone_objects):
@@ -190,7 +190,7 @@ class Dungeon:
 
         return dungeon_matrix
 
-    def display_colour_map(self):
+    def display_colour_map(self) -> None:
         colour_values = np.linspace(0, 270, len(self.dungeon_tree.end_nodes) + 2)
 
         new_colour_values = np.empty((len(colour_values), 3))
@@ -207,7 +207,7 @@ class Dungeon:
         plt.show()
 
     @staticmethod
-    def generate_room(zone):
+    def generate_room(zone: PartitionNode) -> list:
         print(f'Zone: {zone.bounds}')
 
         # length = randint(2, self.dungeon_tree.nodes[zone].x_len)
@@ -296,6 +296,6 @@ class DungeonAnalysis:
 
 
 
-hi = Dungeon([[0, 0], [20, 20]])
+hi = Dungeon([[0, 0], [24, 18]])
 hi.display_colour_map()
 
