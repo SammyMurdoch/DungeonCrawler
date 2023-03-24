@@ -155,81 +155,74 @@ class PartitionNode(TreeNode):
         else:
             return False
 
-# class EndPartitionNode(PartitionNode):
+#class EndPartitionNode(PartitionNode):
+
 
 
 
 class Dungeon:
     def __init__(self, bounds: list[list[int]]) -> None:
-        self.dungeon_tree = Dungeon.generate_dungeon_tree(self, bounds)
+        self.bounds = bounds
+        self.dungeon_tree = Dungeon.generate_dungeon_tree(self)
+        self.zone_objects = [self.dungeon_tree.nodes[zone] for zone in self.dungeon_tree.end_nodes]
 
-        for zone in self.dungeon_tree.end_nodes:
-            zone_object = self.dungeon_tree.nodes[zone]
+        for zone in self.zone_objects:
+            zone.room = Dungeon.generate_room(zone)
 
-            print(f'Zone: {zone_object.bounds}')
+        self.dungeon_matrix = Dungeon.generate_dungeon_matrix(self)
 
-            # length = randint(2, self.dungeon_tree.nodes[zone].x_len)
-            # height = randint(2, self.dungeon_tree.nodes[zone].y_len)
+    def generate_dungeon_tree(self):
+        self.dungeon_tree = PartitionTree(PartitionNode(self.bounds))
 
+        while not self.dungeon_tree.is_complete:
+            for partition in self.dungeon_tree.active_end_nodes.copy():
+                Dungeon.partition_partition(self, self.dungeon_tree.nodes[partition])
 
-            # b_l_x = randint(zone_object.bounds[0][0], zone_object.bounds[1][0] - length)
-            # b_l_y = randint(zone_object.bounds[0][1], zone_object.bounds[1][1] - height)
+        return self.dungeon_tree
 
-            b_l_x = zone_object.bounds[0][0]
-            b_l_y = zone_object.bounds[0][1]
+    def generate_dungeon_matrix(self):
+        dungeon_matrix = np.zeros((self.bounds[1][1], self.bounds[1][0]))
 
+        for i, zone in enumerate(self.zone_objects):
+            r = zone.room
 
+            dungeon_matrix[r[0][1]: r[1][1], r[0][0]: r[1][0]] = i+1  # Flipped due to matrix geometry
 
-            # zone_object.room = [(b_l_x, b_l_y), (b_l_x+length-1, b_l_y+height-1)] # TODO put back?
-            zone_object.room = [(b_l_x, b_l_y), (b_l_x+zone_object.x_len, b_l_y+zone_object.y_len)]
+        return dungeon_matrix
 
-
-        self.dungeon_matrix = np.zeros((bounds[1][1], bounds[1][0]))
-
-        # TODO either delete this or put it in a better place
-        colour_mat = np.zeros((bounds[1][1], bounds[1][0]))
-        colour_values = np.linspace(0, 270, len(self.dungeon_tree.end_nodes)+2)
+    def display_colour_map(self):
+        colour_values = np.linspace(0, 270, len(self.dungeon_tree.end_nodes) + 2)
 
         new_colour_values = np.empty((len(colour_values), 3))
 
         for i, colour in enumerate(colour_values):
-            new_colour_values[i] = [colour/360, 0.5, 0.5]
+            new_colour_values[i] = [colour / 360, 0.5, 0.5]
 
         for i, row in enumerate(new_colour_values):
             new_colour_values[i] = colors.hsv_to_rgb(tuple(row))
 
-        print(f'Colour Values:\n {new_colour_values}')
-
         c_map = colors.ListedColormap(new_colour_values)
-        ###
 
-
-        for zone in self.dungeon_tree.end_nodes:
-            zone_object = self.dungeon_tree.nodes[zone]  # TODO this should just be an attribute
-            r = zone_object.room
-
-            self.dungeon_matrix[r[0][1]: r[1][1], r[0][0]: r[1][0]] = 1 # Flipped due to matrix geometry
-            colour_mat[r[0][1]: r[1][1], r[0][0]: r[1][0]] = zone
-
-            print(zone_object.room, "hi")
-
-        #print(self.dungeon_matrix)
-
-        print()
-
-        print(colour_mat)
-
-        plt.imshow(colour_mat, cmap=c_map)
+        plt.imshow(self.dungeon_matrix, cmap=c_map)
         plt.show()
 
-    def generate_dungeon_tree(self, bounds):
-        dungeon_tree = PartitionTree(PartitionNode(bounds))
+    @staticmethod
+    def generate_room(zone):
+        print(f'Zone: {zone.bounds}')
 
-        while not dungeon_tree.is_complete:
-            for partition in dungeon_tree.active_end_nodes.copy():
-                Dungeon.partition_partition(self, dungeon_tree.nodes[partition])
+        # length = randint(2, self.dungeon_tree.nodes[zone].x_len)
+        # height = randint(2, self.dungeon_tree.nodes[zone].y_len)
 
-        return dungeon_tree
+        # b_l_x = randint(zone_object.bounds[0][0], zone_object.bounds[1][0] - length)
+        # b_l_y = randint(zone_object.bounds[0][1], zone_object.bounds[1][1] - height)
+
+        b_l_x = zone.bounds[0][0]
+        b_l_y = zone.bounds[0][1]
+
+        # zone_object.room = [(b_l_x, b_l_y), (b_l_x+length-1, b_l_y+height-1)] # TODO put back?
+        room = [(b_l_x, b_l_y), (b_l_x + zone.x_len, b_l_y + zone.y_len)]
+
+        return room
 
 
     def partition_partition(self, partition: PartitionNode) -> None:
@@ -303,5 +296,6 @@ class DungeonAnalysis:
 
 
 
-hi = Dungeon([[0, 0], [100, 100]])
+hi = Dungeon([[0, 0], [20, 20]])
+hi.display_colour_map()
 
