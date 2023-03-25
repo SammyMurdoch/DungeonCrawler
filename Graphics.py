@@ -5,7 +5,7 @@ import numpy as np
 from Level import Level, level
 import networkx as nx
 
-from DungeonGenerator import hi
+#from DungeonGenerator import hi
 
 
 class MatrixedObject:  # TODO inherit from dungeon which has dungeon_surf and grid_spacing
@@ -132,11 +132,11 @@ class Graphics:
         player_rect.center = player.coords
 
         monsters = [
-            {(9, 7): {"template": "zombie", "attack_damage": 20}},
+            {(9, 7): {"template": "zombie llama", "attack_damage": 20}},
             {(3, 14): {"template": "snail", "hit_points": 40}},
             {(2, 15): {}}]  # TODO fix differences between coordinate systems
 
-        monsters = []  # TODO remove
+        #monsters = []  # TODO remove
 
         monster_objects = [Monster(list(monster.keys())[0], **list(monster.values())[0]) for monster in monsters]
 
@@ -201,9 +201,9 @@ class Graphics:
 
 
 
-#dungeon = Graphics(level.level_matrix, (0, 0))
+dungeon = Graphics(level.level_matrix, (0, 0))
 
-dungeon = Graphics(hi.dungeon_matrix, np.nonzero(hi.dungeon_matrix)[0][::-1])  # TODO player placement fails
+#dungeon = Graphics(hi.dungeon_matrix, np.nonzero(hi.dungeon_matrix)[0][::-1])  # TODO player placement fails
 
 dungeon.display_graphics()
 

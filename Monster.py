@@ -9,8 +9,8 @@ class Monster(TemplatedObject):
     default_items = GameData.csv_to_dict_keys_unique_column(path, 0)
 
     def __init__(self, location, template='template', **kwargs):
-        print("wkegnkwebgkwbegbkwebg", kwargs)
-        super().__init__(self, template, Monster.default_items, kwargs)
+        #print("wkegnkwebgkwbegbkwebg", kwargs)
+        TemplatedObject.__init__(self, template, Monster.default_items, kwargs)
         self.coords = location
 
         self.surf = pygame.image.load(self.texture).convert_alpha()  # TODO put all graphic things in a different place

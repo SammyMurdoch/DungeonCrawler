@@ -1,7 +1,6 @@
 from GameData import GameData
 
 class TemplatedObject:
-    
     def __init__(self, template, templates, attribute_dict):
         self.default_attributes = list(templates['template'].keys())  # TODO Should default attributes be a class variable instead
 

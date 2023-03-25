@@ -1,5 +1,5 @@
 import numpy as np
-from random import randint, random
+from random import random
 import matplotlib.pyplot as plt
 from matplotlib import colors
 import math
@@ -154,7 +154,7 @@ class PartitionNode(TreeNode):
             return True
         else:
             return False
-
+''
 #class EndPartitionNode(PartitionNode):
 
 
@@ -238,16 +238,13 @@ class Dungeon:
                 #split_axis_pdf = lambda x: (1/math.pi) * (math.atan(x) + math.pi/2)
                 split_axis_pdf = lambda x: 1/2 * (math.tanh(x) + 1)
 
-                print("owegowegw", math.log(partition.x_len/partition.y_len), [partition.x_len, partition.y_len])
-
                 split_axis = SampleContinuousDistribution.bernoulli_sample(split_axis_pdf,
                                                                            math.log(partition.x_len/partition.y_len))
 
-                Dungeon.split_partition(self, (split_axis + 1) % 2, partition)
-            else:
-                self.dungeon_tree.active_end_nodes.remove(partition.index)
-        else:
-            self.dungeon_tree.active_end_nodes.remove(partition.index)
+                if Dungeon.split_partition(self, (split_axis + 1) % 2, partition):
+                    return
+
+        self.dungeon_tree.active_end_nodes.remove(partition.index)
 
     @staticmethod
     def random_split(dim: list, min_a: int=4, max_a: int=400) -> int:  # TODO if outside of the bounds, return no split, might need to change the other bit that decides on the split
@@ -255,18 +252,17 @@ class Dungeon:
 
         return SampleContinuousDistribution.bernoulli_sample(pdf, math.prod(dim))
 
-
-    def split_partition(self, direction: int, partition: PartitionNode) -> None:
+    def split_partition(self, direction: int, partition: PartitionNode) -> bool:
         initial_bounds = partition.bounds
         l_b = initial_bounds[0][direction] + 2
         u_b = initial_bounds[1][direction] - 2
 
         d = u_b - l_b
+        if d == 0:
+            return False
 
-        print(u_b, l_b) # sometimes is 0??!
-
-        split_point_cdf = lambda x: (d*math.sin(4*math.pi*x/d) - 8*d*math.sin(2*math.pi*x/d) + 12*math.pi*x)/\
-                                           (12*math.pi*d)
+        split_point_cdf = lambda x: (d*math.sin(4*math.pi*x/d) - 8*d*math.sin(2*math.pi*x/d) + 12*math.pi*x) / \
+                                    (12*math.pi*d)
         split_point = round(SampleContinuousDistribution.single_sample(split_point_cdf, (u_b + l_b) / 2) + l_b)
 
         sub_par_1_b = [initial_bounds[0], [None, None]]
@@ -281,6 +277,8 @@ class Dungeon:
         self.dungeon_tree.add_node(PartitionNode(sub_par_1_b, partition.index))
         self.dungeon_tree.add_node(PartitionNode(sub_par_2_b, partition.index))
 
+        return True
+
 
 class DungeonAnalysis:
     def __init__(self, sim_count) -> None:
@@ -288,14 +286,15 @@ class DungeonAnalysis:
         self.dungeon_simulations = [Dungeon([[0, 0], [100, 100]]) for i in range(self.count)]
 
     def graph_zone_distribution(self):
-        return NotImplementedError
+        raise NotImplementedError
 
     def generate_dungeon_data(self):
         self.mean_zone_area = sum([dungeon.area for dungeon in self.dungeon_simulations])/self.count
-        return NotImplementedError
+        raise NotImplementedError
 
 
 
-hi = Dungeon([[0, 0], [24, 18]])
+hi = Dungeon([[0, 0], [100, 100]])
 hi.display_colour_map()
+#print(hi.dungeon_matrix)
 
