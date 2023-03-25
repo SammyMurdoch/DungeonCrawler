@@ -298,3 +298,5 @@ hi = Dungeon([[0, 0], [100, 100]])
 hi.display_colour_map()
 #print(hi.dungeon_matrix)
 
+print("hi")
+
