@@ -184,6 +184,27 @@ class PartitionNode(TreeNode):
         return split_axis
 
 
+class Corridor:
+    def __init__(self, start_coord: list[int], end_coord: list[int]):
+        self.start = start_coord
+        self.end = end_coord
+
+        self.matrix = Corridor.generate_corridor_matrix(self)
+
+    def generate_corridor_matrix(self) -> np.ndarray:
+        rows = abs(self.start[1]-self.end[1]) + 1
+        cols = abs(self.start[0]-self.end[0]) + 1
+        print(rows, cols)
+        corridor_matrix = np.ones((rows, cols))
+
+        initial_direction = randint(0, 1)
+        print(corridor_matrix)
+        corridor_matrix[initial_direction:rows-(initial_direction+1)%2, initial_direction:cols-(initial_direction+1)%2] = 0
+
+        return corridor_matrix
+
+# TODO make a room class
+
 class Dungeon:
     def __init__(self, bounds: list[list[int]]) -> None:
         self.bounds = bounds
@@ -232,28 +253,13 @@ class Dungeon:
 
     @staticmethod
     def generate_room(zone: PartitionNode) -> list:
-        print(f'Zone: {zone.bounds}')
-
-        length = randint(2, zone.x_len)
-        height = randint(2, zone.y_len)
-
-        print("-----")
-        print(zone.b_l, zone.b_r, zone.t_l, zone.t_r)
-
-        print("xlen", zone.x_len, "ylen", zone.y_len)
-
-        print(zone.b_l[0], zone.b_r[0] - length)
-        print(zone.b_l[1], zone.t_l[1] - height)
-        print(length, height, zone.x_len, zone.y_len)
+        length = randint(3*zone.x_len//4, zone.x_len)
+        height = randint(3*zone.y_len//4, zone.y_len)
 
         b_l_x = randint(zone.b_l[0], zone.b_r[0] - length)
         b_l_y = randint(zone.b_l[1], zone.t_l[1] - height)
 
-        # b_l_x = zone.bounds[0][0]
-        # b_l_y = zone.bounds[0][1]
-
-        room = [(b_l_x, b_l_y), (b_l_x+length-1, b_l_y+height-1)] # TODO put back?
-        #room = [(b_l_x, b_l_y), (b_l_x + zone.x_len, b_l_y + zone.y_len)]
+        room = [(b_l_x, b_l_y), (b_l_x+length-1, b_l_y+height-1)]
 
         return room
 
@@ -269,7 +275,7 @@ class Dungeon:
         self.dungeon_tree.active_end_nodes.remove(partition.index)
 
     @staticmethod
-    def random_split_area(area: float, min_a: int=4, max_a: int=400) -> int:  # TODO if outside of the bounds, return no split, might need to change the other bit that decides on the split
+    def random_split_area(area: float, min_a: int=4, max_a: int=400) -> int:
         pdf = lambda x: (x-min_a)/(max_a-min_a)
 
         return SampleContinuousDistribution.bernoulli_sample(pdf, area)
@@ -332,5 +338,5 @@ class DungeonAnalysis:
 
 
 
-hi = Dungeon([[0, 0], [50, 50]])
-hi.display_colour_map()
+dungeon = Dungeon([[0, 0], [64, 40]])
+dungeon.display_colour_map()
