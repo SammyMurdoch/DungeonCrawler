@@ -80,61 +80,18 @@ class Tree:
         except (AttributeError, TypeError):
             return 0
 
-class PartitionTree(Tree):
-    def __init__(self, root=None) -> None:
-        if root is not None:
-            self.end_nodes = {len(self)}
-            self.active_end_nodes = {len(self)}
-        else:
-            self.end_nodes = None
-            self.active_end_nodes = None
-
-        super().__init__(root)
-
-    def __str__(self) -> str:
-        s = ""
-
-        for node in self.nodes:
-            s += f'Index: {node}, {str(self.nodes[node])}\n'
-
-        s += f'\nEnd Nodes: {self.end_nodes}\nActive End Nodes: {self.active_end_nodes}'
-
-        return s
-
-    def add_node(self, node: TreeNode) -> None:
-        super().add_node(node)
-
-        if self.end_nodes is None:
-            self.end_nodes = {node.index}
-            self.active_end_nodes = {node.index}
-        else:
-            self.end_nodes.add(node.index)
-            self.active_end_nodes.add(node.index)
-
-            if node.parent_index in self.end_nodes:
-                self.end_nodes.remove(node.parent_index)
-                self.active_end_nodes.remove(node.parent_index)
-
-    @property
-    def is_complete(self) -> bool:
-        if self.active_end_nodes is None:
-            return False
-
-        if not self.active_end_nodes:
-            return True
-
-        return False
-
 
 class PartitionNode(TreeNode):
     def __init__(self, bounds: list[list[int]], parent: int=None, room: list[list[int]]=None) -> None:
+        self.level = None
+
         super().__init__(parent)
 
         self.bounds = bounds
         self.room = room
 
     def __str__(self) -> str: # TODO change to print out all attributes in a certain list
-        return f'Bounds: {self.bounds}, Room: {self.room}, {super().__str__()}'
+        return f'Bounds: {self.bounds}, Room: {self.room}, {super().__str__()}, Level: {self.level}'
 
     @property
     def x_len(self) -> int:
@@ -172,7 +129,7 @@ class PartitionNode(TreeNode):
             return False
 
     def check_partition_dimensions(self) -> bool:
-        if self.x_len >= 10 and self.y_len >= 10:
+        if self.x_len >= 10 and self.y_len >= 10: # TODO or leads to fewer long rectanges but can run into
             return True
 
         return False
@@ -182,6 +139,66 @@ class PartitionNode(TreeNode):
         split_axis = SampleContinuousDistribution.bernoulli_sample(split_axis_pdf,
                                                                    math.log(self.x_len / self.y_len))
         return split_axis
+
+
+class PartitionTree(Tree):
+    def __init__(self, root=None) -> None:
+        if root is not None:
+            self.end_nodes = {len(self)}
+            self.active_end_nodes = {len(self)}
+
+            self.levels = {0: [0]}
+        else:
+            self.end_nodes = None
+            self.active_end_nodes = None
+
+            self.levels = {}
+
+        super().__init__(root)
+
+    def __str__(self) -> str:
+        s = ""
+
+        for node in self.nodes:
+            s += f'Index: {node}, {str(self.nodes[node])}\n'
+
+        s += f'\nEnd Nodes: {self.end_nodes}\nActive End Nodes: {self.active_end_nodes}'
+
+        return s
+
+    def add_node(self, node: PartitionNode) -> None:
+        super().add_node(node)
+
+        if node.parent_index is None:
+            node.level = 0
+        else:
+            node.level = self.nodes[node.parent_index].level + 1
+
+        try:
+            self.levels[node.level].append(node.index)
+        except KeyError:
+            self.levels[node.level] = [node.index]
+
+        if self.end_nodes is None:
+            self.end_nodes = {node.index}
+            self.active_end_nodes = {node.index}
+        else:
+            self.end_nodes.add(node.index)
+            self.active_end_nodes.add(node.index)
+
+            if node.parent_index in self.end_nodes:
+                self.end_nodes.remove(node.parent_index)
+                self.active_end_nodes.remove(node.parent_index)
+
+    @property
+    def is_complete(self) -> bool:
+        if self.active_end_nodes is None:
+            return False
+
+        if not self.active_end_nodes:
+            return True
+
+        return False
 
 
 class Corridor:
@@ -194,12 +211,11 @@ class Corridor:
     def generate_corridor_matrix(self) -> np.ndarray:
         rows = abs(self.start[1]-self.end[1]) + 1
         cols = abs(self.start[0]-self.end[0]) + 1
-        print(rows, cols)
         corridor_matrix = np.ones((rows, cols))
 
         initial_direction = randint(0, 1)
-        print(corridor_matrix)
-        corridor_matrix[initial_direction:rows-(initial_direction+1)%2, initial_direction:cols-(initial_direction+1)%2] = 0
+        corridor_matrix[initial_direction:rows-(initial_direction+1) % 2,
+                        initial_direction:cols-(initial_direction+1) %2 ] = 0
 
         return corridor_matrix
 
@@ -213,6 +229,7 @@ class Dungeon:
 
         for zone in self.zone_objects:
             zone.room = Dungeon.generate_room(zone)
+
 
         self.dungeon_matrix = Dungeon.generate_dungeon_matrix(self)
 
@@ -340,3 +357,15 @@ class DungeonAnalysis:
 
 dungeon = Dungeon([[0, 0], [64, 40]])
 dungeon.display_colour_map()
+
+print(dungeon.dungeon_tree)
+
+
+# test_partition_tree = PartitionTree(TreeNode())
+# test_partition_tree.add_node(PartitionNode([[1, 3], [4, 5]], parent=0))
+#
+# print(test_partition_tree)
+#
+# test_partition_tree.add_node(PartitionNode(0))
+#
+# print(test_partition_tree)
