@@ -1,5 +1,5 @@
 import numpy as np
-from random import random
+from random import random, randint
 import matplotlib.pyplot as plt
 from matplotlib import colors
 import math
@@ -137,15 +137,31 @@ class PartitionNode(TreeNode):
         return f'Bounds: {self.bounds}, Room: {self.room}, {super().__str__()}'
 
     @property
-    def x_len(self) -> float:
+    def x_len(self) -> int:
         return abs(self.bounds[1][0] - self.bounds[0][0])
 
     @property
-    def y_len(self) -> float:
+    def y_len(self) -> int:
         return abs(self.bounds[1][1] - self.bounds[0][1])
 
     @property
-    def area(self) -> float:
+    def t_l(self) -> list:
+        return [self.bounds[0][0], self.bounds[1][1]]
+
+    @property
+    def t_r(self) -> list:
+        return self.bounds[1]
+
+    @property
+    def b_l(self) -> list:
+        return self.bounds[0]
+
+    @property
+    def b_r(self) -> list:
+        return [self.bounds[1][0], self.bounds[0][1]]
+
+    @property
+    def area(self) -> int:
         return self.x_len * self.y_len
 
     @property
@@ -166,10 +182,6 @@ class PartitionNode(TreeNode):
         split_axis = SampleContinuousDistribution.bernoulli_sample(split_axis_pdf,
                                                                    math.log(self.x_len / self.y_len))
         return split_axis
-
-#class EndPartitionNode(PartitionNode):
-
-
 
 
 class Dungeon:
@@ -222,17 +234,26 @@ class Dungeon:
     def generate_room(zone: PartitionNode) -> list:
         print(f'Zone: {zone.bounds}')
 
-        # length = randint(2, self.dungeon_tree.nodes[zone].x_len)
-        # height = randint(2, self.dungeon_tree.nodes[zone].y_len)
+        length = randint(2, zone.x_len)
+        height = randint(2, zone.y_len)
 
-        # b_l_x = randint(zone_object.bounds[0][0], zone_object.bounds[1][0] - length)
-        # b_l_y = randint(zone_object.bounds[0][1], zone_object.bounds[1][1] - height)
+        print("-----")
+        print(zone.b_l, zone.b_r, zone.t_l, zone.t_r)
 
-        b_l_x = zone.bounds[0][0]
-        b_l_y = zone.bounds[0][1]
+        print("xlen", zone.x_len, "ylen", zone.y_len)
 
-        # zone_object.room = [(b_l_x, b_l_y), (b_l_x+length-1, b_l_y+height-1)] # TODO put back?
-        room = [(b_l_x, b_l_y), (b_l_x + zone.x_len, b_l_y + zone.y_len)]
+        print(zone.b_l[0], zone.b_r[0] - length)
+        print(zone.b_l[1], zone.t_l[1] - height)
+        print(length, height, zone.x_len, zone.y_len)
+
+        b_l_x = randint(zone.b_l[0], zone.b_r[0] - length)
+        b_l_y = randint(zone.b_l[1], zone.t_l[1] - height)
+
+        # b_l_x = zone.bounds[0][0]
+        # b_l_y = zone.bounds[0][1]
+
+        room = [(b_l_x, b_l_y), (b_l_x+length-1, b_l_y+height-1)] # TODO put back?
+        #room = [(b_l_x, b_l_y), (b_l_x + zone.x_len, b_l_y + zone.y_len)]
 
         return room
 
@@ -311,5 +332,5 @@ class DungeonAnalysis:
 
 
 
-hi = Dungeon([[0, 0], [100, 100]])
+hi = Dungeon([[0, 0], [50, 50]])
 hi.display_colour_map()
