@@ -234,6 +234,9 @@ class Corridor:
 
         return {(x + min_x, y + min_y) for x, y in matrix_nonzero_indices}
 
+    def __str__(self):
+        return f'Start: {self.start}, End:{self.end}'
+
 # TODO make a room class
 
 class Dungeon:
@@ -249,7 +252,7 @@ class Dungeon:
             zone.tiled_coordinates.update(*tiles)
 
         for level in range(max(self.dungeon_tree.levels.keys())-1, min(self.dungeon_tree.levels.keys())-1, -1):
-            for node_index in self.dungeon_tree.levels[level]:
+            for node_index in self.dungeon_tree.levels[level]: # TODO maybe confusing as it is not the same zone as before
                 zone = self.dungeon_tree.nodes[node_index]
 
                 if zone.children_indices is not None:
@@ -262,6 +265,9 @@ class Dungeon:
                     zone.corridor = Corridor(corridor_start, corridor_end)
 
                     zone.tiled_coordinates.update(zone.corridor.tile_coordinates)
+
+        for zone in self.dungeon_tree.nodes:
+            print(self.dungeon_tree.nodes[zone].corridor)
 
 
 
