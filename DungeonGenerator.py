@@ -1,5 +1,5 @@
 import numpy as np
-from random import random, randint
+from random import random, randint, choice
 import matplotlib.pyplot as plt
 from matplotlib import colors
 import math
@@ -89,9 +89,15 @@ class PartitionNode(TreeNode):
 
         self.bounds = bounds
         self.room = room
+        self.corridor = None
+        self.tiled_coordinates = set()
 
     def __str__(self) -> str: # TODO change to print out all attributes in a certain list
         return f'Bounds: {self.bounds}, Room: {self.room}, {super().__str__()}, Level: {self.level}'
+
+    # def get_random_interior_point(self, boundary=True) -> list:
+    #     x_coord = randint(self.)
+
 
     @property
     def x_len(self) -> int:
@@ -147,7 +153,7 @@ class PartitionTree(Tree):
             self.end_nodes = {len(self)}
             self.active_end_nodes = {len(self)}
 
-            self.levels = {0: [0]}
+            self.levels = {} # TODO fix level initialisation
         else:
             self.end_nodes = None
             self.active_end_nodes = None
@@ -207,6 +213,7 @@ class Corridor:
         self.end = end_coord
 
         self.matrix = Corridor.generate_corridor_matrix(self)
+        self.tile_coordinates = Corridor.generate_tile_coordinates(self)
 
     def generate_corridor_matrix(self) -> np.ndarray:
         rows = abs(self.start[1]-self.end[1]) + 1
@@ -215,9 +222,17 @@ class Corridor:
 
         initial_direction = randint(0, 1)
         corridor_matrix[initial_direction:rows-(initial_direction+1) % 2,
-                        initial_direction:cols-(initial_direction+1) %2 ] = 0
+                        initial_direction:cols-(initial_direction+1) % 2] = 0
 
         return corridor_matrix
+
+    def generate_tile_coordinates(self) -> set:
+        matrix_nonzero_indices = list(zip(*np.nonzero(self.matrix[::-1])))
+
+        min_x = min(self.start[0], self.end[0])
+        min_y = min(self.start[1], self.end[1])
+
+        return {(x + min_x, y + min_y) for x, y in matrix_nonzero_indices}
 
 # TODO make a room class
 
@@ -229,6 +244,25 @@ class Dungeon:
 
         for zone in self.zone_objects:
             zone.room = Dungeon.generate_room(zone)
+            tiles = [[(x, y)] for x in range(zone.b_l[0], zone.b_r[0])
+                            for y in range(zone.b_l[1], zone.t_l[1])] # [(x, y)] so tuples are added not values
+            zone.tiled_coordinates.update(*tiles)
+
+        for level in range(max(self.dungeon_tree.levels.keys())-1, min(self.dungeon_tree.levels.keys())-1, -1):
+            for node_index in self.dungeon_tree.levels[level]:
+                zone = self.dungeon_tree.nodes[node_index]
+
+                if zone.children_indices is not None:
+                    children_tiled_coordinates = [self.dungeon_tree.nodes[child].tiled_coordinates
+                                                  for child in zone.children_indices]
+                    zone.tiled_coordinates.update(*children_tiled_coordinates)
+
+                    corridor_start = choice(tuple(children_tiled_coordinates[0]))
+                    corridor_end = choice(tuple(children_tiled_coordinates[1]))
+                    zone.corridor = Corridor(corridor_start, corridor_end)
+
+                    zone.tiled_coordinates.update(zone.corridor.tile_coordinates)
+
 
 
         self.dungeon_matrix = Dungeon.generate_dungeon_matrix(self)
@@ -358,9 +392,6 @@ class DungeonAnalysis:
 dungeon = Dungeon([[0, 0], [64, 40]])
 dungeon.display_colour_map()
 
-print(dungeon.dungeon_tree)
-
-
 # test_partition_tree = PartitionTree(TreeNode())
 # test_partition_tree.add_node(PartitionNode([[1, 3], [4, 5]], parent=0))
 #
@@ -369,3 +400,4 @@ print(dungeon.dungeon_tree)
 # test_partition_tree.add_node(PartitionNode(0))
 #
 # print(test_partition_tree)
+
