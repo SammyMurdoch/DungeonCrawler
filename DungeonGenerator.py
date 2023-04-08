@@ -262,7 +262,7 @@ class Dungeon:
 
                     corridor_start = choice(tuple(children_tiled_coordinates[0]))
                     corridor_end = choice(tuple(children_tiled_coordinates[1]))
-                    zone.corridor = Corridor(corridor_start, corridor_end)
+                    zone.corridor = Corridor(corridor_start, corridor_end) # TODO make corridor from the edge of an adjacent rectangle maybe project onto vector of ones
 
                     zone.tiled_coordinates.update(zone.corridor.tile_coordinates)
 

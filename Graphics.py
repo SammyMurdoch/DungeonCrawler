@@ -3,7 +3,6 @@ from Player import Player
 from Monster import Monster
 import numpy as np
 from Level import Level, level
-import networkx as nx
 
 #from DungeonGenerator import hi
 
@@ -25,7 +24,7 @@ class MatrixedObject:  # TODO inherit from dungeon which has dungeon_surf and gr
 
 
 class Walls(MatrixedObject):
-    def __init__(self, tile_matrix, position, grid_spacing, rows, cols):
+    def __init__(self, tile_matrix: np.ndarray, position: str, grid_spacing, rows: int, cols: int):
         self.position = position
         matrix = Walls.create_wall_matrix(tile_matrix, self.position, rows, cols)
         wall_data = {"top": {"texture": "wall.png", "rotation": 0},
@@ -36,48 +35,51 @@ class Walls(MatrixedObject):
         MatrixedObject.__init__(self, matrix, wall_data[position]["texture"], grid_spacing, rotation=wall_data[position]["rotation"])
 
     @staticmethod
-    def create_wall_matrix(tile_matrix, position, rows, cols):  # TODO split this up
+    def mirror_vertically(matrix: np.ndarray) -> np.ndarray:
+        return matrix[::-1]
+
+    @staticmethod
+    def transpose(matrix: np.ndarray) -> np.ndarray:
+        return matrix.transpose()
+
+    @staticmethod
+    def create_wall_matrix(tile_matrix: np.ndarray, position: str, screen_rows: int, screen_cols: int) -> np.ndarray: # TODO split this up
         """Create a matrix for the walls in a given rotation."""
-        tile_matrix_shape = tile_matrix.shape
-
-        if position in ["top", "bottom"]:
-            matrix = np.zeros(tile_matrix_shape)
-            different_wall_freq = rows
+        if position in ['top', 'bottom']:
+            wall_matrix = np.zeros(tile_matrix.shape)
+            extra_wall_frequency = screen_rows
         else:
-            matrix = np.zeros(tile_matrix_shape[::-1])
-            different_wall_freq = cols
+            wall_matrix = np.zeros(tile_matrix.shape[::-1])
+            extra_wall_frequency = screen_cols
 
-        if position == 'top':
-            template_matrix = tile_matrix
-        elif position == 'bottom':
-            template_matrix = tile_matrix[::-1]
-        elif position == 'right': #  transpose and flip along vertical
-            template_matrix = tile_matrix.transpose()[::-1]
-        elif position == 'left':
-            template_matrix = tile_matrix.transpose()
-        else:
-            raise AttributeError
+        pipelines = {'top': [],
+         'bottom': [Walls.mirror_vertically],
+         'left': [Walls.transpose],
+         'right': [Walls.transpose, Walls.mirror_vertically]
+         }
 
-        for i in range(len(matrix)):  # TODO Probably should be a function
-            if not i % different_wall_freq:  # TODO make this at the sized of the screen not sides of the matrix this solves the problem but leads to exits blocked
-                if not i:
-                    matrix[i] = -1 * template_matrix[i]
+        template_matrix = tile_matrix
+        for transform in pipelines[position]:
+            template_matrix = transform(template_matrix)
+
+        for i in range(len(wall_matrix)):
+            on_screen_edge = not i % extra_wall_frequency
+            on_tile_matrix_edge = i
+
+            if on_screen_edge:
+                if on_tile_matrix_edge:
+                    wall_matrix[i] = template_matrix[i] - template_matrix[i - 1]
                 else:
-                    matrix[i] = -1 * template_matrix[i] + template_matrix[i-1]
+                    wall_matrix[i] = template_matrix[i]
             else:
-                matrix[i] += (template_matrix[i] - template_matrix[i-1])
+                wall_matrix[i] = template_matrix[i - 1] - template_matrix[i]
 
-        matrix[matrix > 0] = 0
-        matrix *= -1
+        wall_matrix[wall_matrix < 0] = 0
 
-        if position == 'bottom':
-            matrix = matrix[::-1]
-        elif position == 'right':
-            matrix = matrix[::-1].transpose()
-        elif position == 'left':
-            matrix = matrix.transpose()
+        for transform in pipelines[position][::-1]:
+            wall_matrix = transform(wall_matrix)
 
-        return matrix
+        return wall_matrix
 
     # def create_corner_wall_matrix(self):
 
@@ -91,7 +93,7 @@ class Dungeon:
 
 
 class Graphics:
-    def __init__(self, tile_matrix, player_position):
+    def __init__(self, tile_matrix: np.ndarray, player_position):
         self.dungeon = Dungeon()
 
         self.tiles = MatrixedObject(tile_matrix, "tile_hatch.png", self.dungeon.square_size)
@@ -200,12 +202,11 @@ class Graphics:
             pygame.display.update()
 
 
+if __name__ == '__main__':
+    dungeon = Graphics(level.level_matrix, (0, 0))
 
-dungeon = Graphics(level.level_matrix, (0, 0))
+    #dungeon = Graphics(hi.dungeon_matrix, np.nonzero(hi.dungeon_matrix)[0][::-1])  # TODO player placement fails
 
-#dungeon = Graphics(hi.dungeon_matrix, np.nonzero(hi.dungeon_matrix)[0][::-1])  # TODO player placement fails
+    dungeon.display_graphics()
 
-dungeon.display_graphics()
-
-
-tile_graph = level.level_graph
+    tile_graph = level.level_graph
