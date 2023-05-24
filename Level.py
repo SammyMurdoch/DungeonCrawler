@@ -1,3 +1,4 @@
+from DungeonGenerator import Dungeon
 from GameData import GameData
 from Tile import Tile
 import networkx as nx
@@ -127,6 +128,7 @@ tilesu = np.concatenate((tiles1, tiles2, tiles5, tiles7), axis=1)
 tilesl = np.concatenate((tiles3, tiles4, tiles6, tiles8), axis=1)
 
 tiles = np.concatenate((tilesu, tilesl), axis=0)
+#tiles = Dungeon([[0, 0], [64, 40]]).dungeon_matrix
 
 level = Level("tiles.csv", tiles)
 

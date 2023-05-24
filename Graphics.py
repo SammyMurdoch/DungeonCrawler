@@ -136,9 +136,8 @@ class Graphics:
         monsters = [
             {(9, 7): {"template": "zombie llama", "attack_damage": 20}},
             {(3, 14): {"template": "snail", "hit_points": 40}},
-            {(2, 15): {}}]  # TODO fix differences between coordinate systems
-
-        #monsters = []  # TODO remove
+            {(2, 15): {}}
+        ]  # TODO fix differences between coordinate systems
 
         monster_objects = [Monster(list(monster.keys())[0], **list(monster.values())[0]) for monster in monsters]
 
