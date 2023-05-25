@@ -207,6 +207,14 @@ class PartitionTree(Tree):
         return False
 
 
+class Room:
+    def __init__(self, bounds):
+        self.bounds = bounds
+
+    def __str__(self):
+        return f'Bounds: {self.bounds}.'
+
+
 class Corridor:
     def __init__(self, start_coord: list[int], end_coord: list[int]):
         self.start = start_coord
@@ -237,8 +245,6 @@ class Corridor:
     def __str__(self):
         return f'Start: {self.start}, End:{self.end}'
 
-# TODO make a room class
-
 class Dungeon:
     def __init__(self, bounds: list[list[int]]) -> None:
         self.bounds = bounds
@@ -266,8 +272,8 @@ class Dungeon:
 
                     zone.tiled_coordinates.update(zone.corridor.tile_coordinates)
 
-        for zone in self.dungeon_tree.nodes:
-            print(self.dungeon_tree.nodes[zone].corridor)
+        # for zone in self.dungeon_tree.nodes:
+        #     print(self.dungeon_tree.nodes[zone].corridor)
 
 
 
@@ -286,7 +292,7 @@ class Dungeon:
         dungeon_matrix = np.zeros((self.bounds[1][1], self.bounds[1][0]))
 
         for i, zone in enumerate(self.zone_objects):
-            r = zone.room
+            r = zone.room.bounds
 
             dungeon_matrix[r[0][1]: r[1][1], r[0][0]: r[1][0]] = i+1  # Flipped due to matrix geometry
 
@@ -316,7 +322,7 @@ class Dungeon:
         b_l_x = randint(zone.b_l[0], zone.b_r[0] - length)
         b_l_y = randint(zone.b_l[1], zone.t_l[1] - height)
 
-        room = [(b_l_x, b_l_y), (b_l_x+length-1, b_l_y+height-1)]
+        room = Room([(b_l_x, b_l_y), (b_l_x+length-1, b_l_y+height-1)])
 
         return room
 
