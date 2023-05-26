@@ -272,9 +272,7 @@ class Dungeon:
 
                     zone.tiled_coordinates.update(zone.corridor.tile_coordinates)
 
-        # for zone in self.dungeon_tree.nodes:
-        #     print(self.dungeon_tree.nodes[zone].corridor)
-
+        print(len(self.zone_objects))
 
 
         self.dungeon_matrix = Dungeon.generate_dungeon_matrix(self)
